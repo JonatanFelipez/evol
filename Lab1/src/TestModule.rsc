@@ -14,7 +14,10 @@ loc project = |project://smallsql|;
 public void main() 
 {
 	//m3 model
-	//model = createM3FromEclipseProject(project);
+	model = createM3FromEclipseProject(project);	
+	classloc = classes(model);
+	x = readFileLines(getOneFrom(classloc));
+	println(x);
 	//ast = createAstsFromEclipseProject(project, true);
 	//volume(model, ast);
 } 
@@ -28,7 +31,7 @@ public M3 filterComments(M3 model)
 public void volume(M3 model, set[Declaration] ast) 
 {
 	//Filter comments
-	model2 = filterComments(model);
+	//model2 = filterComments(model);
 	
 	//Lines of code
 	
