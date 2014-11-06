@@ -11,27 +11,47 @@ import String;
 //project location
 loc project = |project://smallsql|;
 
-public void main() 
+public void main2() 
 {
 	//m3 model
-	//model = createM3FromEclipseProject(project);
+	model = createM3FromEclipseProject(project);	
+	
+	//lines of code
+	classloc = classes(model);
+	println(
+		sum([ countLinesOfClass(i) | i <- classloc ]) 
+		);
+	
 	//ast = createAstsFromEclipseProject(project, true);
 	//volume(model, ast);
+	
+	docSections = model@documentation;
+	
 } 
 
-public M3 filterComments(M3 model)
+public M3 makeModel()
 {
-	//separate comments from lines of code
+	return createM3FromEclipseProject(project);
+}
+
+public int countLinesOfClass(loc classLoc)
+{
+	linesInClass = readFileLines(classLoc);
+	
+	return size(filterComments(linesInClass));
+}
+
+public M3 filterComments(list[str] lines)
+{
 	return model;
 }
 
 public void volume(M3 model, set[Declaration] ast) 
 {
 	//Filter comments
-	model2 = filterComments(model);
+	//model2 = filterComments(model);
 	
-	//Lines of code
-	
+	//Lines of code	
 	
 	//Number of units
 }
