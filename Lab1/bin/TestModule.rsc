@@ -21,10 +21,7 @@ public void main2()
 	println(
 		sum([ countLinesOfClass(i) | i <- classloc ]) 
 		);
-	
-	//ast = createAstsFromEclipseProject(project, true);
-	//volume(model, ast);
-	
+			
 	docSections = model@documentation;
 	
 } 
@@ -36,18 +33,59 @@ public M3 makeModel()
 
 public int countLinesOfClass(loc classLoc)
 {
-	linesInClass = readFileLines(classLoc);
+	classStr = readFile(classLoc);
+	
+	filterComments(classStr);
 	
 	return size(filterComments(linesInClass));
 }
 
-public M3 filterComments(list[str] lines)
+public void test1()
 {
-	return model;
+	classText = readFile(|project://Lab1/src/Testcase.java|);
+	//println(classText);
+	//println(filterComments(classText));
+	filterComments(classText);
+}
+
+public str filterComments(str classStr)
+{
+	//println(classStr);	 
+	//filter multiline comments
+	str before = classStr;
+	
+	int i = 1;
+	
+	// /<pre:[^]>\/\*<comment:.>\*\/<post:[^]>/
+	//   /\\*(?:.|[\\n\\r])*?\\*/
+	//	/<pre:.*>\/*<comment:.*>\/<post:.*>\*\//
+	
+	//  \/\/(.|\n)*
+	
+	//    (programma voor)\n(whitespace*)[/][/]<comment:(.*)>\n(programma na) 
+	//	  volgenderonde = programma_voor + programma_na
+	//
+	
+	
+	while(/(<pre:.*?>\/\*<comment:.*>\*\/<post:.*?>)+/ := before)
+	{
+	    before = pre + post;
+		println("Pre: <pre>");
+		println("Comment:<comment>");
+		println("Post: <post>");
+	}
+	//filter singleLine comments
+	//while(/<pre:.>\/\/.?\n?<post:.>/ := before)
+	 //before = pre + post;
+	
+	//filter excess whitespace	
+	return before;
 }
 
 public void volume(M3 model, set[Declaration] ast) 
 {
+	
+
 	//Filter comments
 	//model2 = filterComments(model);
 	
