@@ -10,6 +10,7 @@ import String;
 
 //project location
 loc project = |project://smallsql|;
+loc testfile = |project://Lab1/src/Testcase.java|;
 
 public void main2() 
 {
@@ -31,81 +32,83 @@ public M3 makeModel()
 	return createM3FromEclipseProject(project);
 }
 
-public int countLinesOfClass(loc classLoc)
+// What does commentsInMethod look like, what do the coordinates relate to (offset in file/method?)
+public int countLOCofMethod(M3 model, loc method, 
+		     rel[loc ,loc] commentsInMethod)
 {
-	classStr = readFile(classLoc);
+	//convert method to text
+	str methodText = readFile(method);
 	
-	filterComments(classStr);
+	int begin = method.offset;
 	
-	return size(filterComments(linesInClass));
-}
-
-public void test1()
-{
-	classText = readFile(|project://Lab1/src/Testcase.java|);
-	//println(classText);
-	//println(filterComments(classText));
-	filterComments(classText);
-}
-
-public str filterComments(str classStr)
-{
-	//println(classStr);	 
-	//filter multiline comments
-	str before = classStr;
-	
-	int i = 1;
-	
-	// /<pre:[^]>\/\*<comment:.>\*\/<post:[^]>/
-	//   /\\*(?:.|[\\n\\r])*?\\*/
-	//	/<pre:.*>\/*<comment:.*>\/<post:.*>\*\//
-	
-	//  \/\/(.|\n)*
-	
-	//    (programma voor)\n(whitespace*)[/][/]<comment:(.*)>\n(programma na) 
-	//	  volgenderonde = programma_voor + programma_na
-	//
-	
-	
-	while(/(<pre:.*?>\/\*<comment:.*>\*\/<post:.*?>)+/ := before)
+	//loop through documentation elements, convert to spaces
+	for(docloc <- range(model@documentation))
 	{
-	    before = pre + post;
-		println("Pre: <pre>");
-		println("Comment:<comment>");
-		println("Post: <post>");
+	  //convert file location into string
+	  docstring = readFile(docloc);
+      
+      //build up space string that is as long as the comment 
+	  space = ("" | it + " " | int e <- [1..docloc.length + 1]);
+	  
+	  //<pre comment string> + <space> + <post comment string>
+	  filetext = substring(filetext, begin, docloc.offset ) +
+	  			 space +
+	   			 substring(filetext, docloc.offset + size(docstring), size(filetext));			   			  
 	}
-	//filter singleLine comments
-	//while(/<pre:.>\/\/.?\n?<post:.>/ := before)
-	 //before = pre + post;
 	
-	//filter excess whitespace	
-	return before;
+	return filterWhitespace(filetext);
+}
+
+public int countLOCofFile(M3 model, loc file, set[loc] commentsInFile)
+{
+	//convert file to text
+	str filetext = readFile(file);
+	
+	//loop through documentation elements, convert to spaces
+	for(docloc <- commentsInFile)
+	{
+	  //convert documentation location into string
+	  docstring = readFile(docloc);
+      
+      //build up space string that is as long as the comment 
+	  space = ("" | it + " " | int e <- [1..docloc.length + 1]);
+	  
+	  //<pre comment string> + <space> + <post comment string>
+	  filetext = substring(filetext, 0, docloc.offset ) +
+	  			 space +
+	   			 substring(filetext, docloc.offset + size(docstring), size(filetext));	   				   			  
+	}
+	
+	return filterWhitespace(filetext);
+}
+
+public int filterWhitespace(str text)
+{
+	//split on windows newline
+	list[str] lines = split("\r\n",text);
+	
+	//filter on whitespace lines
+	edited = [line | line <- lines, !(/^\s*$/ := line)];
+	
+	//Debug: show result of edited text, with newlines intercalated
+	println("=========== 
+			 Debug: result without whitespace and comments 
+			 ===========\r\n 
+			 <intercalate("\r\n",edited)>"
+		    );
+	
+	//return the number of lines
+	return size(edited);
 }
 
 public void volume(M3 model, set[Declaration] ast) 
-{
-	
-
-	//Filter comments
-	//model2 = filterComments(model);
-	
-	//Lines of code	
-	
-	//Number of units
-}
+{}
 
 public void unitSize(M3 model)
-{
-	
-}
+{}
 
 public void unitComplexity(M3 model)
-{
-	//Filter comments
-	
-}
+{}
 
 public void duplication(M3 model)
-{
-	//strategy: for each 6 line of code, check if they appear elsewhere
-}
+{}
