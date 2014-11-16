@@ -20,7 +20,8 @@ public str filterExcessWhiteSpace(str source)
 	 	//rebuild source without all excess whitespace
 	    cleanSource = cleanSource + 
 	    	intercalate(" ", [x | x <- spaceline, x != ""]);
-	}
+	} 
+	return cleanSource;
 }
 
 //remove all whitespace lines from a string

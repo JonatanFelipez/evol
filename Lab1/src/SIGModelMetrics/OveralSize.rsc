@@ -19,6 +19,14 @@ map[str, int] sizes = (
 	"++" : 0
 );
 
+map[str, str] sizeStr = (
+	"--" : "1310000",
+	"-"	 : "655000",
+	"o"  : "246000",
+	"+"	 : "66000",
+	"++" : "0"
+);
+
 public void volumeProject(loc project)
 {
  	model =  createM3FromEclipseProject(project);
@@ -27,19 +35,27 @@ public void volumeProject(loc project)
 
 public void overalVolumeMetric(M3 projectModel)
 {
-	println("calculating lines of codes of project...");	
-	
+	println("=========== Overal Volume ============");
+	println("calculating lines of codes of project...\r\n");	
+
 	linOCode = projectLinesOfCode(projectModel); 
 	
-	println("Done!");
-	println("total lines of code: <linOCode>");
-	
-	println("System risk due to overal volume:");
-	if(linOCode > sizes["--"]) println("-- (very high)");
-	if(linOCode > sizes["-"])  println("-- (high)");
-	if(linOCode > sizes["o"])  println("-- (medium)");
-	if(linOCode > sizes["+"])  println("-- (low)");
-	if(linOCode > sizes["++"]) println("-- (very low)");	
+	println("Done! System risk due to overal volume:");
+	if(linOCode > sizes["--"]){
+		println("-- (very high)");
+		println("Motivation: LoC (<linOCode>) bigger than " + sizeStr["--"] );}
+	if(linOCode > sizes["-"]){
+		println("- (high)");
+		println("Motivation: LoC (<linOCode>) smaller than " + sizeStr["--"] );}
+	if(linOCode > sizes["o"]){  
+		println("o (medium)");
+		println("Motivation: LoC (<linOCode>) smaller than " + sizeStr["-"] );}
+	if(linOCode > sizes["+"]){  
+		println("+ (low)");
+		println("Motivation: LoC (<linOCode>) smaller than " + sizeStr["o"] );}
+	if(linOCode > sizes["++"]) {
+		println("++ (very low)");
+		println("Motivation: LoC (<linOCode>) smaller than " + sizeStr["+"] );} 	
 }
 
 private int projectLinesOfCode(M3 model)

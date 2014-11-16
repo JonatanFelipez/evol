@@ -4,9 +4,11 @@ import Prelude;
 import String;
 import IO;
 
+//Parse Libraries
 import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 
+//Utility Libraries
 import SIGModelMetrics::Lib::StringCleaning;
 
 //filter documentation out of file
@@ -37,9 +39,9 @@ public str filterDocInMethod(M3 model, loc method, set[loc] commentsInFile, bool
        && comment.offset < method.offset + size(methodStr))
      {      	
      	comStart = comment.offset - method.offset;
-     	comEnd = docStart + size(readFile(comment));
+     	comEnd = comStart + size(readFile(comment));
      	
-     	methodStr = replaceSubStringWithSpace(methodStr, comStart, comEnd);	
+     	methodStr = replSubStr(methodStr, comStart, comEnd, " ");	
      }
   }	
   if(filterTabs)
