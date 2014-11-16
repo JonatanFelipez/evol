@@ -1,96 +1,86 @@
 module SIGmodel
 import Prelude;
 import String;
+
+//Java Parsing libraries
 import lang::java::m3::Core;
 import lang::java::jdt::m3::AST;
 import lang::java::jdt::m3::Core;
-import IO;
-import String;
+
+//Utility Libraries
+import SIGModelMetrics::Lib::StringCleaning;
+import SIGModelMetrics::Lib::CodeCleaning;
+
+//Metric Libraries
 
 
-public void main()
+public void main2()
 {
-	project = |project://smallsq|;
-	model = createM3FromEclipseProject(project);	
-	println(sigLinesOfCode(model));	
+	project 	= |project://smallsql|;
+	testProject = |project://Lab1/src/Testcase.java|;
+	model 		=  createM3FromEclipseProject(project);	
+	println(projectLinesOfCode(model));	
 }
 
-public void volume(M3 model)
+public map[str,int] unitSize(M3 model)
 {
-	println(sigLinesOfCode(model));		
+	//location of all documentation and files in the project	
+	docLoc = range(model@documentation); 
+	fileLocs = files(model);
+
+	//get all method declarations in the project
+	methLocs = { dec | dec <- model@declarations, dec[0].scheme == "java+method"};
+	
+	//map a method filepath to the line 
+	map[str, int] method2LoC = ();
+	
+	for(method <- methLocs)
+	{
+	  //get all documentation in the file that contains the method 
+	  docsInFile = {doc | doc <- docloc, doc.path == method[1].path};
+	  
+	  method2LoC = method2LoC + 
+	  	(method[0].path : methodSize(model, method[1], docsInFile));
+	}	
+	return method2LoC;
+	
+}
+//calculate the LoC of a method without counting the documentation
+public int methodSize(M3 model, loc method, set[loc] docsInFile)
+{
+  str methodStr = readFile(method);
+  str backupStr = methodStr;
+
+  for(doc <- docsInFile)
+  {  
+    //if comment is within method body
+    if(   doc.offset > method.offset 
+       && doc.offset < method.offset + size(methodStr))
+     {  
+     	//calculate boundaries of documentary in method    	
+     	docStart = doc.offset - method.offset;
+     	docEnd = docStart + size (readFile(doc));
+     	
+     	methodStr = replSubStr(methodStr, docStart, docEnd, " ");	
+     }
+  }	
+  return filterEmptyLines(methodStr);
 }
 
-public int unitSize(M3 model)
+public int projectLinesOfCode(M3 model)
 {
-	docloc = range(model@documentation); //location of all documentation in the project	
-	
-	filelocs = files(model);
-
-	
-	{N | N <- model@declarations, N[0].scheme == "java+method"};
-	
-	
-}
-
-public int sigLinesOfCode(M3 model)
-{
-	fileloc = files(model); 			 //location of all the files in the project
-	docloc = range(model@documentation); //location of all the documentation in the project
+	files  = files(model); 			     //location of all the files in the project
+	docLoc = range(model@documentation); //location of all the documentation in the project
     
     int totalLines = 0; 
     
     //calculate the lines of code for each file  
-    for(file <- fileloc)
-    {
-    	docsInFile = {n | loc n <- docloc, file.file == n.file};
-    	totalLines = totalLines + countLOCofFile(model, file, docsInFile); 	
+    for(file <- files)
+    {	    
+    	docsInFile = {doc | doc <- docLoc, file.path == doc.path};
+    	cleanFile = filterDocInFile(model, file, docsInFile);
+    	totalLines = totalLines + size(split("\r\n", cleanFile));	
     }
     return totalLines;
 }
-
-//count the lines of code in a file
-public int countLOCofFile(M3 model, loc file, set[loc] commentsInFile)
-{
-	//convert file to text
-	str filetext = readFile(file);
-	
-	//loop through documentation elements, convert to spaces
-	for(docloc <- commentsInFile)
-	{
-	  //convert documentation location into string
-	  docstring = readFile(docloc);
-      
-      //build up space string that is as long as the comment 
-	  space = ("" | it + " " | int e <- [1..docloc.length + 1]);
-	  
-	  //<pre comment string> + <space> + <post comment string>
-	  filetext = substring(filetext, 0, docloc.offset ) +
-	  			 space +
-	   			 substring(filetext, docloc.offset + size(docstring), size(filetext));	   				   			  
-	}
-	
-	return filterWhitespace(filetext);
-}
-
-//filter excess lines out of text and count the lines
-public int filterWhitespace(str text)
-{
-	//split on windows newline
-	list[str] lines = split("\r\n",text);
-	
-	//filter on whitespace lines
-	edited = [line | line <- lines, !(/^\s*$/ := line)];
-	
-	//Debug: show result of edited text, with newlines intercalated
-	/*
-	println("=========== 
-			 Debug: result without whitespace and comments 
-			 ===========\r\n 
-			 <intercalate("\r\n",edited)>"
-		    );*/
-	
-	//return the number of lines
-	return size(edited);
-}
-
 
