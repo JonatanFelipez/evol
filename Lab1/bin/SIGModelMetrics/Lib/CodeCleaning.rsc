@@ -35,8 +35,8 @@ public str filterDocInMethod(M3 model, loc method, set[loc] commentsInFile, bool
   for(comment <- commentsInFile)
   {  
     //if comment is within method body
-    if(   comment.offset > method.offset 
-       && comment.offset < method.offset + size(methodStr))
+    if(   comment.offset >= method.offset 
+       && comment.offset <= method.offset + size(methodStr))
      {      	
      	comStart = comment.offset - method.offset;
      	comEnd = comStart + size(readFile(comment));

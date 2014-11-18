@@ -2,7 +2,7 @@ module SIGmodel
 import Prelude;
 import String;
 import IO;
-import Math;
+import util::Math;
 
 //Java Parsing libraries
 import lang::java::m3::Core;
@@ -17,22 +17,6 @@ import SIGModelMetrics::Lib::CodeCleaning;
 import SIGModelMetrics::OveralSize;
 import SIGModelMetrics::UnitSize;
 import SIGModelMetrics::UnitComplexity;
-
-//lower system boundaries for ratings
-map[str, int] systemSizeRankings = (
-	"--" : 1310000,
-	"-"	 : 655000,
-	"o"  : 246000,
-	"+"	 : 66000,
-	"++" : 0
-);
-
-map[str, int] unitSizeRisk = (
-	"Low" : 101,
-	"Moderate" : 51,
-	"High" : 21,
-	"Very High" : 0
-);
 
 public void allMetrics(loc project)
 {
@@ -52,18 +36,19 @@ public void allMetrics(loc project)
 	println("===========    Unit Size     =============");	
 	println("calculating size of units profile...\r\n");
 	
-	unitSizes = unitSizes(model);
-	unitLines = (0 | it + e | _:e <- unitSizes );
+	map[loc,int] unitSizes = unitSizes(model);
+	unitLines = (0 | it + unitSizes[e] | e <- unitSizes );
 	
-	unitSizeDist = catUnitSize(model, unitSizes);	
+	unitSizeDist = catUnitSize(model, unitSizes);
+	getUnitSizeRanking(unitSizeDist);	
     
-    println("Results : Low | Moderate | High | Very High");
-    println("          <unitSizeDist[0]>% | 
-    				   <unitSizeDist[1]>% | 
-    				   <unitSizeDist[2]>% | 
-    				   <unitSizeDist[3]>% \r\n");
-    				   
-    
+    println("Risk due to unit size:");
+    println("Low       : <unitSizeDist[0]>%");
+    println("Moderate  : <unitSizeDist[1]>%");
+    println("High      : <unitSizeDist[2]>%");
+    println("Very High : <unitSizeDist[3]>%\r\n");
+    println("Ranking: ")
+    				    
 	//////////////////////////////////////////////////////////////
 	println("=========== Unit Complexity  =============");
 	println("Metric not yet implemented!");
@@ -72,6 +57,16 @@ public void allMetrics(loc project)
 	println("=========== Code Duplication =============");	
 	println("Metric not yet implemented!");
 }
+
+// Overal Volume /////////////////////////////////////////////////
+map[str, int] systemSizeRankings = (
+	"--" : 1310000,
+	"-"	 : 655000,
+	"o"  : 246000,
+	"+"	 : 66000,
+	"++" : 0
+);
+
 public int overalVolume(M3 model)
 {	return projectLinesOfCode(model);}
 
@@ -81,21 +76,45 @@ public str overalVolumeRisk(int linesOfCode)
 	  if(linesOfCode > systemSizeRankings[rank])
 	  	return rank;
 }
+
+// Unit Size /////////////////////////////////////////////////////
+map[str, int] unitSizeRisk = (
+	"Low" : 0,
+	"Moderate" : 21,
+	"High" : 51,
+	"Very High" : 101
+);
+
+map[str, list[int]] unitSizeRank = (
+	 "++" : [0,  0,  0],
+	 "+"  : [26, 0,  0],
+	 "o"  : [31, 6 , 0],
+	 "-"  : [41, 11, 0],
+	 "--" : [51, 15, 6]
+	);
+
 public list[int] catUnitSize(model, map[loc,int] unitSize)
 {
-	r = calcRiskProfile(unitSizes);
+	r = calcRiskProfile(unitSize);
+	total = (0 | it + r[e] | e <- r);
 	
 	list[int] relRisk = 
 		[
-			r["Low"], 		
-			r["Moderate"], 	
-		 	r["High"], 		
-		 	r["Very High"] 
+			round(r["Low"] 	     / (total*0.01)), 		
+			round(r["Moderate"]  / (total*0.01)), 	
+		 	round(r["High"] 	 / (total*0.01)), 		
+		 	round(r["Very High"] / (total*0.01)) 
 		];
 						 
 	return relRisk;	
 }
-public map[str,int] calcRiskProfile(map[str,int] unitLines)
+
+public str unitSizeRanking()
+{
+	return "error: unitSizeRanking()";
+}
+
+public map[str,int] calcRiskProfile(map[loc,int] unitLines)
 {	
 	map[str,int] riskLines = (
 		"Low" 	    : 0,
@@ -106,14 +125,15 @@ public map[str,int] calcRiskProfile(map[str,int] unitLines)
 	
 	for(method <- unitLines)
 		for(risk <- ["Very High", "High", "Moderate", "Low"])
-			if(unitLines[method] > unitSizeRisk[risk])
+			if(unitLines[method] >= unitSizeRisk[risk]){
 				riskLines += (risk : (riskLines[risk] + unitLines[method]));
+				break;
+			}
 	
 	return riskLines;
-
 }
 
-
+// Unit Complexity  //////////////////////////////////////////////
 public map[str, real] testCaclCom(M3 model)
 {
 	k = testComplexity(model);
@@ -130,3 +150,5 @@ public map[str, real] calcComplexity(map[str, int] complexityLines, int totalLin
 		
 	return percentages;
 }
+
+// Code Duplication //////////////////////////////////////////////

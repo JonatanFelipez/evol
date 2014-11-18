@@ -14,10 +14,11 @@ import SIGModelMetrics::Lib::CodeCleaning;
 //Dependency on other metrics
 import SIGModelMetrics::OveralSize;
 
-public void unitSizeProject(loc project)
+public M3 unitSizeProject(loc project)
 {
  	model =  createM3FromEclipseProject(project);
  	unitSizes(model);
+ 	return model;
 }
 
 public map[loc,int] unitSizes(M3 model)
@@ -27,8 +28,15 @@ public map[loc,int] unitSizes(M3 model)
 
 	//get all method declarations in the project
 	
-	methLocs = { dec[1] | dec <- model@declarations, dec[0].scheme == "java+method"};
-	 
+	methLocs = { dec[1] | dec <- model@declarations, dec[0].scheme == "java+method" || dec[0].scheme == "java+constructor"};
+	methList = [];
+	for(c <- classes(model))
+		for(m <- methods(model, c))
+			methList += m;		
+	
+	//println("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\nmodel@declarations cnt: <size(methLocs)>");
+	//println("<methList>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n");	 
+	
 	map[loc, int] method2LoC = ();
 	
 	for(method <- methLocs)
@@ -39,7 +47,7 @@ public map[loc,int] unitSizes(M3 model)
 	 
 	  method2LoC = method2LoC + (method : size(split("\r\n", cleanMethod)));
 	}
-	debug(method2LoC);	
+	//debug(method2LoC);	
 		
 	return method2LoC;	
 }
