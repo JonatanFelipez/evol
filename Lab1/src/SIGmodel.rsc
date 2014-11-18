@@ -52,10 +52,10 @@ public void allMetrics(loc project)
 	println("===========    Unit Size     =============");	
 	println("calculating size of units profile...\r\n");
 	
-	unitSizes = unitSizes(model);
-	unitLines = (0 | it + e | _:e <- unitSizes );
+	unitSize = unitSizes(model);	
+	unitLines = (0 | it + unitSize[e] | e <- unitSize );
 	
-	unitSizeDist = catUnitSize(model, unitSizes);	
+	unitSizeDist = catUnitSize(model, unitSize);	
     
     println("Results : Low | Moderate | High | Very High");
     println("          <unitSizeDist[0]>% | 
@@ -66,8 +66,12 @@ public void allMetrics(loc project)
     
 	//////////////////////////////////////////////////////////////
 	println("=========== Unit Complexity  =============");
-	println("Metric not yet implemented!");
-	int comp = complexity(model, unitSizes, unitLines);
+	println("calculating unit complexity...\r\n");
+	
+	/*overalComplexity = complexity(model, unitSizes);
+	unitLines = (0 | it + k[e] | e <- k); //This might have to change!!!! Calculating the total amount of lines in units
+	complexityProcentage= calcComplexity(overalComplexity, unitLines);
+	complexityRisk = overalComplexityRisk(complexityProcentage);*/
 	//////////////////////////////////////////////////////////////
 	println("=========== Code Duplication =============");	
 	println("Metric not yet implemented!");
@@ -83,7 +87,7 @@ public str overalVolumeRisk(int linesOfCode)
 }
 public list[int] catUnitSize(model, map[loc,int] unitSize)
 {
-	r = calcRiskProfile(unitSizes);
+	r = calcRiskProfile(unitSize);
 	
 	list[int] relRisk = 
 		[
@@ -95,7 +99,7 @@ public list[int] catUnitSize(model, map[loc,int] unitSize)
 						 
 	return relRisk;	
 }
-public map[str,int] calcRiskProfile(map[str,int] unitLines)
+public map[str,int] calcRiskProfile(map[loc,int] unitLines)
 {	
 	map[str,int] riskLines = (
 		"Low" 	    : 0,
@@ -114,11 +118,27 @@ public map[str,int] calcRiskProfile(map[str,int] unitLines)
 }
 
 
-public map[str, real] testCaclCom(M3 model)
+void testCaclCom(M3 model)
 {
-	k = testComplexity(model);
-	unitLines = (0 | it + k[e] | e <- k);
-	return calcComplexity(k, unitLines);
+	//////////////////////////////////////////////////////////////
+	println("=========== Unit Complexity  =============");
+	println("calculating unit complexity...\r\n");	
+	
+	overalComplexity = complexity(model, unitSizes(model));
+	unitLines = (0 | it + overalComplexity[e] | e <- overalComplexity); //This might have to change!!!! Calculating the total amount of lines in units
+	complexityProcentage= calcComplexity(overalComplexity, unitLines);
+	complexityRisk = overalComplexityRisk(complexityProcentage);
+	println(complexityProcentage);
+	
+	println("Results : Low | Moderate | High | Very High \r\n<"         "><complexityProcentage["Low"]>%| 	<100>%| 	<100>%| 	<100>%");
+//println("<complexityProcentage["Low"]>% | <complexityProcentage["Moderate"]>% | <complexityProcentage["High"]>% | <complexityProcentage["Very High"]>%");
+    /*println("Results : Low 	| Moderate 	| High 	| Very High");
+println("Results : Low 	| Moderate 	| High 	| Very High
+	   <complexityProcentage["Low"]>% | 
+			   <complexityProcentage["Moderate"]>% | 
+			   <complexityProcentage["High"]>% | 
+			   <complexityProcentage["Very High"]>% \r\n");*/
+	println("Ranking: <complexityRisk>");	
 }
 
 map[str, map[str, real]] systemComplexityRankings = (
@@ -146,7 +166,7 @@ public map[str, real] calcComplexity(map[str, int] complexityLines, int totalLin
 	map[str, real] percentages = ();		
 	
 	for(x <- complexityLines)
-		{percentages[x] = complexityLines[x] / (totalLines / 1.0) * 100 ;}
-		
+		{percentages[x] = complexityLines[x] / (totalLines / 1.0) * 100 ;}		
+
 	return percentages;
 }
