@@ -46,20 +46,27 @@ public void allMetrics(loc project)
 	volumeRisk = overalVolumeRisk(linesOfCode);
 	
 	println("Total lines of code: <linesOfCode> 
-	                \r\n Ranking: <volumeRisk>");
+	                \r\n Ranking: <volumeRisk>\r\n");
 	//////////////////////////////////////////////////////////////
 	println("===========    Unit Size     =============");	
 	println("calculating size of units profile...\r\n");
 	
-	unitSizeDist = unitSizeMetric(model, linesOfCode);	
+	unitSizes = unitSizes(model);
+	unitLines = (0 | it + e | _:e <- unitSizes );
+	
+	unitSizeDist = catUnitSize(model, unitSizes);	
     
     println("Results : Low | Moderate | High | Very High");
-    println("          <unitSizeDist[0]>% | <unitSizeDist[1]>% | <unitSizeDist[2]>% | <unitSizeDist[3]>% \r\n");
+    println("          <unitSizeDist[0]>% | 
+    				   <unitSizeDist[1]>% | 
+    				   <unitSizeDist[2]>% | 
+    				   <unitSizeDist[3]>% \r\n");
+    				   
     
 	//////////////////////////////////////////////////////////////
 	println("=========== Unit Complexity  =============");
 	println("Metric not yet implemented!");
-	/*zet hier je complexity methode, alle println hier!*/
+	int comp = complexity(model, unitSizes, unitLines);
 	//////////////////////////////////////////////////////////////
 	println("=========== Code Duplication =============");	
 	println("Metric not yet implemented!");
@@ -73,22 +80,22 @@ public str overalVolumeRisk(int linesOfCode)
 	  if(linesOfCode > systemSizeRankings[rank])
 	  	return rank;
 }
-public list[int] unitSizeMetric(model, totalLinesOfCode)
+public list[int] catUnitSize(model, map[loc,int] unitSize)
 {
-	map[str,int] unitSizes = unitSizes(model);
 	r = calcRiskProfile(unitSizes);
 	
-	list[int] relRisk = [
-		     				r["Low"], 		
-		 	 				r["Moderate"], 	
-						 	r["High"], 		
-						 	r["Very High"] 
-						 ];
+	list[int] relRisk = 
+		[
+			r["Low"], 		
+			r["Moderate"], 	
+		 	r["High"], 		
+		 	r["Very High"] 
+		];
 						 
 	return relRisk;	
 }
 public map[str,int] calcRiskProfile(map[str,int] unitLines)
-{
+{	
 	map[str,int] riskLines = (
 		"Low" 	    : 0,
 		"Moderate"  : 0,
