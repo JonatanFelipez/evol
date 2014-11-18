@@ -36,11 +36,16 @@ public void allMetrics(loc project)
 	println("===========    Unit Size     =============");	
 	println("calculating size of units profile...\r\n");
 	
-	map[loc,int] unitSizes = unitSizes(model);
-	unitLines = (0 | it + unitSizes[e] | e <- unitSizes );
-	
-	unitSizeDist = catUnitSize(model, unitSizes);
+	//Get a mapping from method to the cnt of lines of code
+	map[loc,int] unitSizes = unitSizes(model);	
     
+    //Calculate the total number of lines in all methods 
+	unitLines = (0 | it + unitSizes[e] | e <- unitSizes );
+    
+	//Partition lines of code in level of risk (Low, Moderate, High, Very High)
+	unitSizeDist = catUnitSize(model, unitSizes);	
+    
+    //Calculate the rank given by the SIG.  
     rank = unitSizeRanking(unitSizeDist);
     
     println("Risk due to unit size:");
@@ -97,7 +102,9 @@ map[str, list[int]] unitSizeRank = (
 public list[int] catUnitSize(model, map[loc,int] unitSize)
 {
 	r = calcRiskProfile(unitSize);
+	
 	total = (0 | it + r[e] | e <- r);
+	
 	
 	list[int] relRisk = 
 		[
@@ -105,11 +112,9 @@ public list[int] catUnitSize(model, map[loc,int] unitSize)
 			round(r["Moderate"]  / (total*0.01)), 	
 		 	round(r["High"] 	 / (total*0.01)), 		
 		 	round(r["Very High"] / (total*0.01)) 
-		];
-						 
+		];						 
 	return relRisk;	
 }
-
 public str unitSizeRanking(list[int] sizeRisk)
 {
 	for(k <- ["--", "-", "o", "+"])
@@ -120,15 +125,6 @@ public str unitSizeRanking(list[int] sizeRisk)
 		   return k;
 	return "++";
 }
-
-// Unit Complexity  //////////////////////////////////////////////
-map[str, map[str, real]] systemComplexityRankings = (
-	"--" : ("Moderate" : 50.0, "High" : 15.0, "Very High" : 5.0 ),
-	"-"	 : ("Moderate" : 40.0, "High" : 10.0, "Very High" : 0.0 ),
-	"o"  : ("Moderate" : 30.0, "High" : 5.0,  "Very High" : 0.0 ),
-	"+"	 : ("Moderate" : 25.0, "High" : 0.0,  "Very High" : 0.0 ),
-	"++" : ("Moderate" : 0.0,  "High" : 0.0,  "Very High" : 0.0 )
-);
 
 public map[str,int] calcRiskProfile(map[loc,int] unitLines)
 {	
@@ -144,10 +140,20 @@ public map[str,int] calcRiskProfile(map[loc,int] unitLines)
 			if(unitLines[method] >= unitSizeRisk[risk]){
 				riskLines += (risk : (riskLines[risk] + unitLines[method]));
 				break;
-			}
-	
+			}	
 	return riskLines;
 }
+
+
+// Unit Complexity  //////////////////////////////////////////////
+map[str, map[str, real]] systemComplexityRankings = (
+	"--" : ("Moderate" : 50.0, "High" : 15.0, "Very High" : 5.0 ),
+	"-"	 : ("Moderate" : 40.0, "High" : 10.0, "Very High" : 0.0 ),
+	"o"  : ("Moderate" : 30.0, "High" : 5.0,  "Very High" : 0.0 ),
+	"+"	 : ("Moderate" : 25.0, "High" : 0.0,  "Very High" : 0.0 ),
+	"++" : ("Moderate" : 0.0,  "High" : 0.0,  "Very High" : 0.0 )
+);
+
 
 public map[str, real] testCaclCom(M3 model)
 {
@@ -159,8 +165,8 @@ public map[str, real] testCaclCom(M3 model)
 public str overalComplexityRisk(map[str, real]complexityprec)
 {
 	for(rank <- ["--", "-", "o", "+"])
-  		if(complexityprec["Moderate"] > systemComplexityRankings[rank]["Moderate"] ||
-  		   complexityprec["High"] > systemComplexityRankings[rank]["High"] ||
+  		if(complexityprec["Moderate"]  > systemComplexityRankings[rank]["Moderate"] ||
+  		   complexityprec["High"]      > systemComplexityRankings[rank]["High"] 	||
 		   complexityprec["Very High"] > systemComplexityRankings[rank]["Very High"] 
 		)
   			return rank;
