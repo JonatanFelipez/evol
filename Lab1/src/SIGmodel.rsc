@@ -35,13 +35,17 @@ public void allMetrics(loc project)
 	//////////////////////////////////////////////////////////////
 	println("===========    Unit Size     =============");	
 	println("calculating size of units profile...\r\n");
+
+	unitSize = unitSizes(model);	
 	
+	unitSizeDist = catUnitSize(model, unitSizes);	
+    
 	map[loc,int] unitSizes = unitSizes(model);
-	unitLines = (0 | it + unitSizes[e] | e <- unitSizes );
-	
-	unitSizeDist = catUnitSize(model, unitSizes);
+	unitLines = (0 | it + unitSize[e] | e <- unitSize );
     
     rank = unitSizeRanking(unitSizeDist);
+
+	getUnitSizeRanking(unitSizeDist);	
     
     println("Risk due to unit size:");
     println("Low       : <unitSizeDist[0]>%");
@@ -96,8 +100,7 @@ map[str, list[int]] unitSizeRank = (
 
 public list[int] catUnitSize(model, map[loc,int] unitSize)
 {
-	r = calcRiskProfile(unitSize);
-	total = (0 | it + r[e] | e <- r);
+	r = calcRiskProfile(unitSizes);
 	
 	list[int] relRisk = 
 		[
@@ -105,11 +108,9 @@ public list[int] catUnitSize(model, map[loc,int] unitSize)
 			round(r["Moderate"]  / (total*0.01)), 	
 		 	round(r["High"] 	 / (total*0.01)), 		
 		 	round(r["Very High"] / (total*0.01)) 
-		];
-						 
+		];						 
 	return relRisk;	
 }
-
 public str unitSizeRanking(list[int] sizeRisk)
 {
 	for(k <- ["--", "-", "o", "+"])
@@ -130,7 +131,7 @@ map[str, map[str, real]] systemComplexityRankings = (
 	"++" : ("Moderate" : 0.0,  "High" : 0.0,  "Very High" : 0.0 )
 );
 
-public map[str,int] calcRiskProfile(map[loc,int] unitLines)
+public map[str,int] calcRiskProfile(map[str,int] unitLines)
 {	
 	map[str,int] riskLines = (
 		"Low" 	    : 0,
@@ -144,8 +145,7 @@ public map[str,int] calcRiskProfile(map[loc,int] unitLines)
 			if(unitLines[method] >= unitSizeRisk[risk]){
 				riskLines += (risk : (riskLines[risk] + unitLines[method]));
 				break;
-			}
-	
+			}	
 	return riskLines;
 }
 
