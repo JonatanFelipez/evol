@@ -11,60 +11,53 @@ import lang::java::jdt::m3::Core;
 import SIGModelMetrics::Lib::StringCleaning;
 import SIGModelMetrics::Lib::CodeCleaning;
 
+//Dependency on other metrics
+import SIGModelMetrics::OveralSize;
+
 public void unitSizeProject(loc project)
 {
  	model =  createM3FromEclipseProject(project);
- 	unitSizeMapping = unitSize(model);
- 	
- 	println("calculated size of methods!");	
+ 	unitSizes(model);
 }
 
-public void unitSizeMetric(M3 model)
-{
-	println("============= Unit Size ==============");
-	println("calculating size of units profile...\r\n");
-	map[str,int] sizeOfUnits = unitSize(model);
-	println("Metric not yet implemented!");
-	
-	
-	/*
-	println("Done! System risk due to overal volume:");
-	if(linOCode > sizes["--"]){
-		println("-- (very high)");
-		println("Motivation: LoC (<linOCode>) bigger than " + sizeStr["--"] );}
-	if(linOCode > sizes["-"]){
-		println("- (high)");
-		println("Motivation: LoC (<linOCode>) smaller than " + sizeStr["--"] );}
-	if(linOCode > sizes["o"]){  
-		println("o (medium)");
-		println("Motivation: LoC (<linOCode>) smaller than " + sizeStr["-"] );}
-	if(linOCode > sizes["+"]){  
-		println("+ (low)");
-		println("Motivation: LoC (<linOCode>) smaller than " + sizeStr["o"] );}
-	if(linOCode > sizes["++"]) {
-		println("++ (very low)");
-		println("Motivation: LoC (<linOCode>) smaller than " + sizeStr["+"] );} 	
-	*/
-}
-
-public map[str,int] unitSize(M3 model)
+public map[loc,int] unitSizes(M3 model)
 {
 	set[loc] docloc = range(model@documentation); //location of all documentation in the project	
 	set[loc] filelocs = files(model);
 
 	//get all method declarations in the project
-	methLocs = { dec | dec <- model@declarations, dec[0].scheme == "java+method"};
+	
+	methLocs = { methods | classes <- classes(model) dec <- model@declarations, dec[0].scheme == "java+method"};
 	 
-	map[str, int] method2LoC = ();
-	//map a method filepath to the line
+	map[loc, int] method2LoC = ();
+	
 	for(method <- methLocs)
 	{
 	  //get all documentation in the file that contains the method 
-	  docsInFile = { doc | doc <- docloc, doc.path == method[1].path};
-	  cleanMethod = filterDocInMethod(model, method[1], docsInFile, false);	 
+	  docsInFile = { doc | doc <- docloc, doc.path == method.path};
+	  cleanMethod = filterDocInMethod(model, method, docsInFile, false);	 
 	 
-	  method2LoC = method2LoC + (method[0].path : size(split("\r\n", cleanMethod)));
-	}	
-	return method2LoC;
-	
+	  method2LoC = method2LoC + (method : size(split("\r\n", cleanMethod)));
+	}
+	debug(method2LoC);	
+		
+	return method2LoC;	
 }
+
+public void debug(map[loc, int] arg)
+{
+	for(x <- arg)
+	 if(arg[x] < 10 && x.end[0] - x.begin[0] != arg[x])
+	 {
+	 	println("lines: <arg[x]>");
+	 	println("location: <x>");
+	 }
+}
+
+
+
+
+
+
+
+
