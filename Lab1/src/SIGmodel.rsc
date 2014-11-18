@@ -141,6 +141,26 @@ public map[str, real] testCaclCom(M3 model)
 	return calcComplexity(k, unitLines);
 }
 
+map[str, map[str, real]] systemComplexityRankings = (
+	"--" : ("Moderate" : 51.0, "High" : 16.0, "Very High" : 6.0 ),
+	"-"	 : ("Moderate" : 41.0, "High" : 11.0, "Very High" : 0.0 ),
+	"o"  : ("Moderate" : 31.0, "High" : 6.0, "Very High" : 0.0 ),
+	"+"	 : ("Moderate" : 26.0, "High" : 0.0, "Very High" : 0.0 ),
+	"++" : ("Moderate" : 0.0, "High" : 0.0, "Very High" : 0.0 )
+);
+
+public str overalComplexityRisk(map[str, real]complexityprec)
+{
+	for(rank <- ["--", "-", "o", "+", "++"])
+  		if(complexityprec["Moderate"] >= systemComplexityRankings[rank]["Moderate"] &&
+  		   complexityprec["High"] >= systemComplexityRankings[rank]["High"] &&
+		   complexityprec["Very High"] >= systemComplexityRankings[rank]["Very High"] 
+		)
+  			return rank;
+  			
+	return "Error: overalComplexityRisk";
+}
+
 public map[str, real] calcComplexity(map[str, int] complexityLines, int totalLines)
 {
 	map[str, real] percentages = ();		
