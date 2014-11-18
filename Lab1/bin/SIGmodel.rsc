@@ -22,7 +22,7 @@ public void allMetrics(loc project)
 {
 	println("Calculating M3 model...");
 	model = createM3FromEclipseProject(project);
-	println("Done! Calculating Metrics:\r\n");
+	println("Calculating Metrics...\r\n");
 	//////////////////////////////////////////////////////////////
 	println("===========  Overal Volume   ============");
 	println("calculating lines of codes of project...\r\n");	
@@ -40,19 +40,20 @@ public void allMetrics(loc project)
 	unitLines = (0 | it + unitSizes[e] | e <- unitSizes );
 	
 	unitSizeDist = catUnitSize(model, unitSizes);
-	getUnitSizeRanking(unitSizeDist);	
+    
+    rank = unitSizeRanking(unitSizeDist);
     
     println("Risk due to unit size:");
     println("Low       : <unitSizeDist[0]>%");
     println("Moderate  : <unitSizeDist[1]>%");
     println("High      : <unitSizeDist[2]>%");
     println("Very High : <unitSizeDist[3]>%\r\n");
-    println("Ranking: ")
+    println(" Ranking: <rank>\r\n");
     				    
 	//////////////////////////////////////////////////////////////
 	println("=========== Unit Complexity  =============");
 	println("Metric not yet implemented!");
-	int comp = complexity(model, unitSizes, unitLines);
+	comp = complexity(model, unitSizes);
 	//////////////////////////////////////////////////////////////
 	println("=========== Code Duplication =============");	
 	println("Metric not yet implemented!");
@@ -68,7 +69,7 @@ map[str, int] systemSizeRankings = (
 );
 
 public int overalVolume(M3 model)
-{	return projectLinesOfCode(model);}
+{return projectLinesOfCode(model);}
 
 public str overalVolumeRisk(int linesOfCode)
 {
@@ -87,10 +88,10 @@ map[str, int] unitSizeRisk = (
 
 map[str, list[int]] unitSizeRank = (
 	 "++" : [0,  0,  0],
-	 "+"  : [26, 0,  0],
-	 "o"  : [31, 6 , 0],
-	 "-"  : [41, 11, 0],
-	 "--" : [51, 15, 6]
+	 "+"  : [25, 0,  0],
+	 "o"  : [30, 5 , 0],
+	 "-"  : [40, 10, 0],
+	 "--" : [50, 15, 5]
 	);
 
 public list[int] catUnitSize(model, map[loc,int] unitSize)
@@ -109,10 +110,25 @@ public list[int] catUnitSize(model, map[loc,int] unitSize)
 	return relRisk;	
 }
 
-public str unitSizeRanking()
+public str unitSizeRanking(list[int] sizeRisk)
 {
-	return "error: unitSizeRanking()";
+	for(k <- ["--", "-", "o", "+"])
+  		if(sizeRisk[1] > unitSizeRank[k][0] ||
+  		   sizeRisk[2] > unitSizeRank[k][1] ||
+  		   sizeRisk[3] > unitSizeRank[k][2] 
+  		   )
+		   return k;
+	return "++";
 }
+
+// Unit Complexity  //////////////////////////////////////////////
+map[str, map[str, real]] systemComplexityRankings = (
+	"--" : ("Moderate" : 50.0, "High" : 15.0, "Very High" : 5.0 ),
+	"-"	 : ("Moderate" : 40.0, "High" : 10.0, "Very High" : 0.0 ),
+	"o"  : ("Moderate" : 30.0, "High" : 5.0,  "Very High" : 0.0 ),
+	"+"	 : ("Moderate" : 25.0, "High" : 0.0,  "Very High" : 0.0 ),
+	"++" : ("Moderate" : 0.0,  "High" : 0.0,  "Very High" : 0.0 )
+);
 
 public map[str,int] calcRiskProfile(map[loc,int] unitLines)
 {	
@@ -133,12 +149,23 @@ public map[str,int] calcRiskProfile(map[loc,int] unitLines)
 	return riskLines;
 }
 
-// Unit Complexity  //////////////////////////////////////////////
 public map[str, real] testCaclCom(M3 model)
 {
 	k = testComplexity(model);
 	unitLines = (0 | it + k[e] | e <- k);
 	return calcComplexity(k, unitLines);
+}
+
+public str overalComplexityRisk(map[str, real]complexityprec)
+{
+	for(rank <- ["--", "-", "o", "+"])
+  		if(complexityprec["Moderate"] > systemComplexityRankings[rank]["Moderate"] ||
+  		   complexityprec["High"] > systemComplexityRankings[rank]["High"] ||
+		   complexityprec["Very High"] > systemComplexityRankings[rank]["Very High"] 
+		)
+  			return rank;
+  			
+	return "++";
 }
 
 public map[str, real] calcComplexity(map[str, int] complexityLines, int totalLines)

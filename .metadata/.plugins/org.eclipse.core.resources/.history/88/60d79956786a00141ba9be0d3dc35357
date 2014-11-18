@@ -1,0 +1,16 @@
+/*hahahahahahahahahaha*/
+
+public class Testcase
+{
+
+	public void main()
+	{
+		//this is a comment :):)
+		int x = 1+ 1; /*asdf*///another one
+		/*multilinecomment
+		 * 
+		 * 
+		 * 
+		 */
+	}
+}

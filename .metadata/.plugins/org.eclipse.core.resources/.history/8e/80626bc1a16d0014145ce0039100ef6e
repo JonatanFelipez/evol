@@ -1,0 +1,48 @@
+module SIGModelMetrics::Lib::CodeCleaning
+
+import Prelude;
+import String;
+import IO;
+
+import lang::java::m3::Core;
+import lang::java::jdt::m3::Core;
+
+//filter excess lines out of text and count the lines
+public str filterWhitespaceLines(str text)
+{
+	//split on windows newline
+	list[str] lines = split("\r\n",text);
+	
+	//filter on whitespace lines
+	edited = [line | line <- lines, !(/^\s*$/ := line)];
+	
+	//return the number of lines
+	return size(edited);
+}
+
+//filter excess whitespace in a string
+public str filterWhitespaceLines(str source)
+{
+	
+}
+
+public str filterEmptyLines(str source)
+{
+	//split on windows newline
+	list[str] lines = split("\r\n", source);
+	
+	//filter on whitespace lines
+	edited = [line | line <- lines, !(/^\s*$/ := line)];
+	
+	//return the number of lines
+	return intercalate("\r\n", edited);
+}
+
+//replace substring with replacement
+public str replSubStr(str source, int iStart, int iEnd, str replacement)
+{
+    //<pre comment string> + <space> + <post comment string>	
+    return substring(source, 0, iStart) +
+	  	   ("" | it + replacement | e <- [1..(iEnd - iStart) + 1]) +
+	   	   substring(source, iEnd, size(source));	  
+}

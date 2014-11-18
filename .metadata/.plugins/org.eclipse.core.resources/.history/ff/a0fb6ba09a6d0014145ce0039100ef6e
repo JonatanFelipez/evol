@@ -1,0 +1,20 @@
+model sigModelMetrics::cloneDetection
+
+import IO;
+import prelude;
+import lang::java::m3::Core;
+import lang::java::jdt::m3::Core;
+import util::Math
+
+alias seqInf = tuple[loc file, list[int] lineNumbers, int count];
+
+public str run(){
+	map[str, sequenceInfo] hash = ();
+	
+	M3 model = createM3FromEclipseProject(|project://smallsql|);
+	
+	for(file <- files(model)){
+		hash = scanFile(hash, f);
+	}
+	return calculateRank(uniqueLines(getDuplicatedSequences(hash)), 100);
+}

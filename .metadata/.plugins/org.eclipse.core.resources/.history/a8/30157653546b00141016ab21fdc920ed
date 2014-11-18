@@ -1,0 +1,146 @@
+module TestModule
+
+import Prelude;
+import lang::java::m3::Core;
+import lang::java::jdt::m3::AST;
+import lang::java::jdt::m3::Core;
+
+import IO;
+import String;
+
+//project location
+loc project = |project://smallsql|;
+loc testfile = |project://Lab1/src/Testcase.java|;
+
+public void main2() 
+{
+	//m3 model
+	model = createM3FromEclipseProject(project);	
+	
+	//lines of code
+	classloc = classes(model);
+	println(
+		sum([ countLinesOfClass(i) | i <- classloc ]) 
+		);
+			
+	docSections = model@documentation;
+	
+} 
+
+public M3 makeModel()
+{
+	return createM3FromEclipseProject(project);
+}
+
+public int countLinesOfMethod(M3 model, loc method)
+{
+	//convert method to text
+	str methodText = readFile(mehtod);
+	
+	//loop through documentation elements, convert to spaces
+	for(docloc <- range(model@documentation))
+	{
+	  //convert file location into string
+	  docstring = readFile(docloc);
+      
+      //build up space string that is as long as the comment 
+	  space = ("" | it + " " | int e <- [1..docloc.length + 1]);
+	  
+	  //<pre comment string> + <space> + <post comment string>
+	  filetext = substring(filetext, 0, docloc.offset ) +
+	  			 space +
+	   			 substring(filetext, docloc.offset + size(docstring), size(filetext));
+	   				   			  
+	}
+	
+	return filterWhitespace(filetext);
+}
+
+public int countLinesOfClass(M3 model, loc class)
+{
+	//convert file to text
+	str filetext = readFile(file);
+	
+	//loop through documentation elements, convert to spaces
+	for(docloc <- range(model@documentation))
+	{
+	  //convert file location into string
+	  docstring = readFile(docloc);
+      
+      //build up space string that is as long as the comment 
+	  space = ("" | it + " " | int e <- [1..docloc.length + 1]);
+	  
+	  //<pre comment string> + <space> + <post comment string>
+	  filetext = substring(filetext, 0, docloc.offset ) +
+	  			 space +
+	   			 substring(filetext, docloc.offset + size(docstring), size(filetext));	   				   			  
+	}
+	
+	return filterWhitespace(filetext);
+}
+
+public int countLOCofFile(M3 model, loc file)
+{
+	//convert file to text
+	str filetext = readFile(file);
+	
+	//loop through documentation elements, convert to spaces
+	for(docloc <- range(model@documentation))
+	{
+	  //convert file location into string
+	  docstring = readFile(docloc);
+      
+      //build up space string that is as long as the comment 
+	  space = ("" | it + " " | int e <- [1..docloc.length + 1]);
+	  
+	  //<pre comment string> + <space> + <post comment string>
+	  filetext = substring(filetext, 0, docloc.offset ) +
+	  			 space +
+	   			 substring(filetext, docloc.offset + size(docstring), size(filetext));
+	   				   			  
+	}
+	
+	return filterWhitespace(filetext);
+}
+
+public int filterWhitespace(str text)
+{
+	//split on windows newline
+	list[str] lines = split("\r\n",text);
+	
+	//filter on whitespace lines
+	edited = [line | line <- lines, !(/^\s*$/ := line)];
+	
+	//Debug: show result of edited text
+	println("=========== Debug: result without whitespace and comments ===========\n
+			 <edited>");
+	
+	//return the number of lines
+	return size(edited);
+}
+
+public void volume(M3 model, set[Declaration] ast) 
+{
+	//Filter comments
+	//model2 = filterComments(model);
+	
+	//Lines of code	
+	
+	//Number of units
+}
+
+public void unitSize(M3 model)
+{
+	
+}
+
+public void unitComplexity(M3 model)
+{
+	//Filter comments
+	
+}
+
+public void duplication(M3 model)
+{
+	//strategy: for each 6 line of code, check if they appear elsewhere
+}
