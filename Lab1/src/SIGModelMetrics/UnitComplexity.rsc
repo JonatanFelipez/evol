@@ -22,55 +22,53 @@ import lang::java::jdt::m3::AST;
     that measures the number of linearly-independent paths through a program module.*/
     
  /*Linearly-independent paths = a complete path which, disregarding back tracking (such as loops), 
- 	has an unique set of decisions in a program. */
- 	
- 	//linOCode = projectLinesOfCode(projectModel);
+ 	has an unique set of decisions in a program. */ 	
 
-public void overalVolumeMetric(M3 model)
+map[str, int] unitComplexityRisk = (
+	"Low" : 0,
+	"Moderate" : 10,
+	"High" : 20,
+	"Very High" : 50
+);
+
+public map[str, int] testComplexity(M3 model)
 {
-	println("calculating code complexity of project...");	
-	
-	linOCode = projectLinesOfCode(projectModel); 
-	
-	println("Done!");
-	println("total lines of code: <linOCode>");
-	
-	println("System risk due to overal volume:");
-	if(linOCode > sizes["--"]) println("-- (very high)");
-	if(linOCode > sizes["-"])  println("-- (high)");
-	if(linOCode > sizes["o"])  println("-- (medium)");
-	if(linOCode > sizes["+"])  println("-- (low)");
-	if(linOCode > sizes["++"]) println("-- (very low)");	
+	return complexity(model, unitSizes(model));	
 }
 
-int complexity(M3 model){
-	int noRisk = 0;
-	int moderateRisk = 0;
-	int highRisk = 0;
-	int veryHighRisk = 0;
+public map[str, int] complexity(M3 model, map[loc,int]unitSizes){
+
+	map[str, int] complexityLines = (
+		"Low" : 0,
+		"Moderate" : 0,
+		"High" : 0,
+		"Very High" : 0
+	);
 	
 	int cnt = 0;
 	set[Declaration] decls = createAstsFromEclipseProject(model.id, true); //need a tree to look for statements and declarations
-	int onePro = projectLinesOfCode(model) / 100; // need to calculate method impact: method / (loc / 100) = % impact 
-	map[str,int] units = unitSize(model);	//need to calculate method impact	
-	
+		
 	visit(decls){
-		case m: \method(_,_,_,_, Statement impl):{
-				println("loc: <m@src>");
-				int methodSize = [units[k] | k <-units, units == m@src];
-				cnt = countComplexity(impl, 50);				
-				println("CC: <cnt>");
-				if(cnt > 0 && cnt < 11)
-				{
-					noRisk += methodSize / onePro;
-					println("norisk: <noRisk>");
-				}
+		case m: \method(_,_,_,_, Statement impl):{							
+			methodSize = unitSizes[m@src];
+			cnt = countComplexity(impl, 50);				
+								
+			for(x <- ["Very High", "High", "Moderate", "Low"])
+				if(cnt > unitComplexityRisk[x]){					
+					complexityLines[x] = complexityLines[x] + methodSize;
+					}	
 			} 
-		case c: \constructor(_,_,_, Statement impl, 50):			
-				cnt += countComplexity(impl); 				
-	}
-	
-	return cnt;
+		case c: \constructor(_,_,_, Statement impl, 50):{			
+				methodeSize = unitSizes[c@src];
+				cnt = countComplexity(impl, 50);
+				
+				for(x <- ["Very High", "High", "Moderate", "Low"])
+				if(cnt > unitComplexityRisk[x]){					
+					complexityLines[x] = complexityLines[x] + methodSize;
+					}	
+				}				 				
+	}	
+	return complexityLines;
 }
 
 //This method calculates the complexity of the statement is is given.

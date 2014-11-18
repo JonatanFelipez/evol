@@ -27,7 +27,7 @@ public map[loc,int] unitSizes(M3 model)
 
 	//get all method declarations in the project
 	
-	methLocs = { methods | classes <- classes(model) dec <- model@declarations, dec[0].scheme == "java+method"};
+	methLocs = { dec[1] | dec <- model@declarations, dec[0].scheme == "java+method"};
 	 
 	map[loc, int] method2LoC = ();
 	

@@ -16,6 +16,7 @@ import SIGModelMetrics::Lib::CodeCleaning;
 //Metric Libraries
 import SIGModelMetrics::OveralSize;
 import SIGModelMetrics::UnitSize;
+import SIGModelMetrics::UnitComplexity;
 
 //lower system boundaries for ratings
 map[str, int] systemSizeRankings = (
@@ -110,4 +111,22 @@ public map[str,int] calcRiskProfile(map[str,int] unitLines)
 	
 	return riskLines;
 
+}
+
+
+public map[str, real] testCaclCom(M3 model)
+{
+	k = testComplexity(model);
+	unitLines = (0 | it + k[e] | e <- k);
+	return calcComplexity(k, unitLines);
+}
+
+public map[str, real] calcComplexity(map[str, int] complexityLines, int totalLines)
+{
+	map[str, real] percentages = ();		
+	
+	for(x <- complexityLines)
+		{percentages[x] = complexityLines[x] / (totalLines / 1.0) * 100 ;}
+		
+	return percentages;
 }
