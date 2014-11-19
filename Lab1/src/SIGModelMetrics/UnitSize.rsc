@@ -30,12 +30,7 @@ public map[loc,int] unitSizes(M3 model)
 	methList = [];
 	for(c <- classes(model))
 		for(m <- methods(model, c))
-			methList += m;
-	
-	println("<size(methLocs)>");
-	println("<size(methList)>");
-	
-	assert size(methLocs) == size(methList) : "size methLocs != size methList";				
+			methList += m;			
 	
 	map[loc, int] method2LoC = ();
 	

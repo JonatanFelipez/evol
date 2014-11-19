@@ -78,7 +78,8 @@ public map[str, int] complexity(M3 model, map[loc,int]unitSizes){
 					}	
 				}				 				
 	}
-	println("number of const and meth: <countConst + countMethods + countMet2>");
+	
+	assert countConst + countMethods + countMet2 == size(methods(model)) : "Unit Complexity: total amount of evaluated methods (<countConst + countMethods + countMet2>) does not equal total amount of methods (<size(methods(model))>)";
 	return complexityLines;	
 }
 
@@ -89,21 +90,36 @@ int countComplexity(Statement stat, int limit)
 	int cnt = 1; //using CC = number of decisions + 1 (its the reason we start with 1)
 	
 	 visit(stat){
-		case \if(Expression condition, _):  
+	 	//Decision making statements
+		case \if(Expression condition, _):  //if
 			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}			
-		case \if(Expression condition, _, _): 
+		case \if(Expression condition, _, _): //if-else
 			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}
-		case \while(Expression condition,_): //should a while loop really be here. Only reason i can think off is because a while can have multible conditions 
-			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}
-		case \case(_): // is a switch really that hard to understand? maybe only a risk if the number of cases in a switch exceeds a limit? 
-			if(cnt > limit){return cnt;}else{cnt+=1;} 
-		case \for(_,_,_,_): //should a for loop really be here (machine code or  Assembly will use a Jump, bne, branch on equal not if statements) it does have one condition
-			if(cnt > limit){return cnt;}else{cnt+=1;}			 
-		case \for(_,_,_): //should a for loop really be here (machine code or  Assembly will use a Jump, bne, branch on equal not if statements) it does have one condition
+		case \case(_):  //switch-case
 			if(cnt > limit){return cnt;}else{cnt+=1;}
-		case \foreach(_, Expression condition, _):
-			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}
+		
+		//Loop statements
+		case \while(Expression condition,_): //while 
+			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}		 
+		case \for(_,_,_,_): //normal for
+			if(cnt > limit){return cnt;}else{cnt+=1;}			 
+		case \for(_,_,_): //enhanced for
+			if(cnt > limit){return cnt;}else{cnt+=1;}
+		case \do(_, Expression condition): //do
+			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}	
+		
+		//Exception statements
+		case \try(_,_): //try-catch
+			if(cnt > limit){return cnt;}else{cnt+=1;}
+ 		case \try(_,_,_): //try-catch-finally
+ 			if(cnt > limit){return cnt;}else{cnt+=1;}
+		case \throw(Expression condition): //throw
+			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}		
 	}
+	
+	assert cnt < 1 : "Unit Complexity: cnt is smaller then one";
+	assert limit > 0 : "Unit Complexity: limit is zero";
+	
 	return cnt;
 }
 
@@ -117,5 +133,7 @@ int countCondition(Expression condition)
 		case \infix(_,str operator, Expression rhs): 
 			cnt += 1 + countCondition(rhs);
 	}
+	
+	assert cnt > 0 : "Unit Complexity: the number of conditions found is <cnt>!";
 	return cnt;
 }
