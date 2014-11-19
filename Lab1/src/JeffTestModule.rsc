@@ -4,6 +4,8 @@ import Prelude;
 import lang::java::m3::Core;
 import lang::java::jdt::m3::AST;
 import lang::java::jdt::m3::Core;
+import vis::Figure;
+import vis::Render;
 
 import IO;
 import String;
@@ -144,4 +146,16 @@ public void unitComplexity(M3 model)
 public void duplication(M3 model)
 {
 	//strategy: for each 6 line of code, check if they appear elsewhere
+}
+
+public void out1(){
+  render(outline([info(10,"kfjds;flkjdsa;flkjds;flkj")],100,size(300.0)));
+}
+
+public void testText()
+{
+	t1 = text("Rascal", fontSize(20), fontColor("black"));
+	t2 = text("Rascal", fontSize(40), fontColor("blue"));
+	t3 = text("Rascal", fontSize(60), fontColor("red"));
+	render(box(hcat([t1, t2, t3]), gap(10)));
 }

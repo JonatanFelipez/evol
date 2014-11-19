@@ -255,9 +255,9 @@ map[str, str] calcMaintainability(map[str, str] overallResults)
 	}else{
 		results["Analysability"] = "o";
 	}
-	//========Analysability==========
+	//========Changeability==========
 	Changeability = resultsValues[overallResults["complexity"]] + 
-					resultsValues[overallResults["unitSize"]];
+					resultsValues[overallResults["duplication"]];
 	if(Changeability > 0){
 		if(Changeability > 1){
 			results["Changeability"] = "++";
