@@ -215,8 +215,13 @@ map[str, int] duplicatedRank = (
 
 public str calcDuplicatedRank(real percentage)
 {
-	for(x<-duplicatedRank)
-		{;}
+	for(k <- ["++", "+", "o", "-","--"])
+  		if(percentage < duplicatedRank[k] ||
+  		   percentage < duplicatedRank[k] ||
+  		   percentage < duplicatedRank[k] 
+  		   )
+	   return k;
+	return "++";
 }
 // Maintainability ///////////////////////////////////////////////
 	map[str, str] overallResults2 = (
