@@ -20,7 +20,7 @@ public void testDup(loc proj){
 	
 	model = createM3FromEclipseProject(proj);
 	
-	x = duplicatedPercentage(model,	24118);	
+	x = duplicatedPercentage(model,	14);	
 	println(x);
 }
 
@@ -34,7 +34,7 @@ public real duplicatedPercentage(M3 model, int totalLines){
 	assert duplicatedLines < totalLines : "duplicatedLines bigger than total lines of code";
 	
 	percentage = duplicatedLines / (totalLines * 1.0) * 100 ;
-	assert percentage < 100 && percentage > 0 : "duplication not between 0% and 100%";
+	assert percentage <= 100 && percentage >= 0 : "duplication not between 0% and 100%";
 	return percentage;
 }
 
@@ -44,8 +44,7 @@ private map[str, id] processFile(map[str, id] sequenceMap, loc file, M3 model)
 	set[loc] docLoc = range(model@documentation);
 	set[loc] docsInFile = {doc | doc <- docLoc, file.path == doc.path};	
 	
-	str cleanFileStr = filterDocInFile(model, file, docsInFile, true);
-	
+	str cleanFileStr = filterDocInFile(file, docsInFile, true);
 	assert size(cleanFileStr) <= size(readFile(file)) : "cleaned file is bigger than regular file";
 	
 	//split the file into lines

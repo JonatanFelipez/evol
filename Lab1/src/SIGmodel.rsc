@@ -17,6 +17,8 @@ import SIGModelMetrics::Lib::CodeCleaning;
 import SIGModelMetrics::OveralSize;
 import SIGModelMetrics::UnitSize;
 import SIGModelMetrics::UnitComplexity;
+import SIGModelMetrics::Duplication;
+
 
 public void allMetrics(loc project)
 {
@@ -72,7 +74,8 @@ public void allMetrics(loc project)
 
 	//////////////////////////////////////////////////////////////
 	println("=========== Code Duplication =============");	
-	println("Metric not yet implemented!");
+	percentage = duplicatedPercentage(model, linesOfCode);
+	println("Code duplication: <round(percentage)>");
 	
 	//////////////////////////////////////////////////////////////
 	println("=========== Overall =============");
