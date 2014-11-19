@@ -43,9 +43,9 @@ public map[loc,int] unitSizes(M3 model)
 	{
 	  //get all documentation in the file that contains the method 
 	  docsInFile = { doc | doc <- docloc, doc.path == method.path};
-	  cleanMethod = filterDocInMethod(model, method, docsInFile, false);	 
+	  cleanMethod = filterDocInMethod(method, docsInFile, false);	 
 	 
-	  method2LoC[method2LoC] = size(split("\r\n", cleanMethod));
+	  method2LoC[method] = size(split("\r\n", cleanMethod));
 	}
 		
 	return method2LoC;	
