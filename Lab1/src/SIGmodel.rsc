@@ -118,7 +118,6 @@ map[str, list[int]] unitSizeRank = (
 	 "-"  : [40, 10, 0],
 	 "--" : [50, 15, 5]
 	);
-
 public list[int] catUnitSize(model, map[loc,int] unitSize)
 {
 	r = calcRiskProfile(unitSize);
@@ -206,6 +205,19 @@ public map[str, real] calcComplexity(map[str, int] complexityLines, int totalLin
 
 // Code Duplication //////////////////////////////////////////////
 
+map[str, int] duplicatedRank = (
+	 "++" : 3,
+	 "+"  : 5,
+	 "o"  : 10,
+	 "-"  : 20,
+	 "--" : 101
+	);
+
+public str calcDuplicatedRank(real percentage)
+{
+	for(x<-duplicatedRank)
+		{;}
+}
 // Maintainability ///////////////////////////////////////////////
 	map[str, str] overallResults2 = (
 	"volume" : "++", 
