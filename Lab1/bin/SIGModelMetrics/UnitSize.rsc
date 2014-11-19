@@ -14,11 +14,10 @@ import SIGModelMetrics::Lib::CodeCleaning;
 //Dependency on other metrics
 import SIGModelMetrics::OveralSize;
 
-public M3 unitSizeProject(loc project)
+public void testUnitSizeProject(loc project)
 {
  	model =  createM3FromEclipseProject(project);
  	unitSizes(model);
- 	return model;
 }
 
 public map[loc,int] unitSizes(M3 model)
@@ -27,15 +26,13 @@ public map[loc,int] unitSizes(M3 model)
 	set[loc] filelocs = files(model);
 
 	//get all method declarations in the project
-	
 	methLocs = { dec[1] | dec <- model@declarations, dec[0].scheme == "java+method" || dec[0].scheme == "java+constructor"};
 	methList = [];
 	for(c <- classes(model))
 		for(m <- methods(model, c))
-			methList += m;		
+			methList += m;
 	
-	//println("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\nmodel@declarations cnt: <size(methLocs)>");
-	//println("<methList>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n");	 
+	assert size(methLocs) == size(methList) : "size methLocs != size methList";				
 	
 	map[loc, int] method2LoC = ();
 	
@@ -45,21 +42,10 @@ public map[loc,int] unitSizes(M3 model)
 	  docsInFile = { doc | doc <- docloc, doc.path == method.path};
 	  cleanMethod = filterDocInMethod(model, method, docsInFile, false);	 
 	 
-	  method2LoC = method2LoC + (method : size(split("\r\n", cleanMethod)));
+	  method2LoC[method2LoC] = size(split("\r\n", cleanMethod));
 	}
-	//debug(method2LoC);	
 		
 	return method2LoC;	
-}
-
-public void debug(map[loc, int] arg)
-{
-	for(x <- arg)
-	 if(arg[x] < 10 && x.end[0] - x.begin[0] != arg[x])
-	 {
-	 	println("lines: <arg[x]>");
-	 	println("location: <x>");
-	 }
 }
 
 

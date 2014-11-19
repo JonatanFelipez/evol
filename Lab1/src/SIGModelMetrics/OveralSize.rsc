@@ -27,5 +27,6 @@ public int projectLinesOfCode(M3 model)
     	//add the linecount of the cleaned file to the total
     	totalLines = totalLines + size(split("\r\n", cleanFile));	
     }
+    
     return totalLines;
 }
