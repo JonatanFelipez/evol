@@ -73,6 +73,12 @@ public void allMetrics(loc project)
 	//////////////////////////////////////////////////////////////
 	println("=========== Code Duplication =============");	
 	println("Metric not yet implemented!");
+	
+	//////////////////////////////////////////////////////////////
+	println("=========== Overall =============");
+	println("\t\t volume \t Complexity \t duplication \t size");
+	println("analysability ++ ++ ++ ++");	
+	
 }
 
 // Overal Volume /////////////////////////////////////////////////
@@ -196,3 +202,101 @@ public map[str, real] calcComplexity(map[str, int] complexityLines, int totalLin
 }
 
 // Code Duplication //////////////////////////////////////////////
+
+// Maintainability ///////////////////////////////////////////////
+	map[str, str] overallResults2 = (
+	"volume" : "++", 
+	"complexity" : "--",
+	"duplication": "-",
+	"unitSize":"0"
+	);
+	
+	map[str, int] resultsValues = (
+	"++" : 2,
+	"+" : 1,
+	"o": 0,
+	"-": -1,
+	"--": -2
+	);
+	
+map[str, str] calcMaintainability(map[str, str] overallResults)
+{
+	map[str, str] results = (
+	"Analysability" : "++",
+	"Changeability" : "++",	
+	"Testability" : "++"	
+	); //"Stability": "++",
+	
+	//========Analysability==========
+	Analysability = resultsValues[overallResults["volume"]] + 
+					resultsValues[overallResults["duplication"]] + 
+					resultsValues[overallResults["unitSize"]];
+	
+	println("Analysability: <Analysability>");
+	
+	if(Analysability > 0){
+		if(Analysability > 1){
+			results["Analysability"] = "++";
+		}else
+		{
+			results["Analysability"] = "+";
+		}
+	}else if(Analysability < 0)
+	{
+		if(Analysability < -1){
+			results["Analysability"] = "--";
+		}else
+		{
+			results["Analysability"] = "-";
+		}
+	}else{
+		results["Analysability"] = "o";
+	}
+	//========Analysability==========
+	Changeability = resultsValues[overallResults["complexity"]] + 
+					resultsValues[overallResults["unitSize"]];
+	if(Changeability > 0){
+		if(Changeability > 1){
+			results["Changeability"] = "++";
+		}else
+		{
+			results["Changeability"] = "+";
+		}
+	}else if(Changeability < 0)
+	{
+		if(Changeability < -1){
+			results["Changeability"] = "--";
+		}else
+		{
+			results["Changeability"] = "-";
+		}
+	}else{
+		results["Changeability"] = "0";
+	}
+	//========Testability==========
+	Testability = resultsValues[overallResults["complexity"]] + resultsValues[overallResults["unitSize"]]; //unit testing
+	if(Testability > 0){
+		if(Testability > 1){
+			results["Testability"] = "++";
+		}else
+		{
+			results["Testability"] = "+";
+		}
+	}else if(Changeability < 0)
+	{
+		if(Changeability < -1){
+			results["Testability"] = "--";
+		}else
+		{
+			results["Testability"] = "-";
+		}
+	}else{
+		results["Testability"] = "0";
+	}
+	
+	
+	println("=========== Overall =============");
+	println("\t\f volume \f Complexity \f duplication \f size");
+	
+	return results;
+}
