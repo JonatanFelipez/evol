@@ -117,7 +117,7 @@ int countComplexity(Statement stat, int limit)
 			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}		
 	}
 	
-	assert cnt > 1 : "Unit Complexity: cnt is smaller then one";
+	assert cnt < 1 : "Unit Complexity: cnt is smaller then one";
 	assert limit > 0 : "Unit Complexity: limit is zero";
 	
 	return cnt;
