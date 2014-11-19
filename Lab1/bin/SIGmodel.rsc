@@ -188,13 +188,10 @@ public str overalComplexityRisk(map[str, real]complexityprec)
 public map[str, real] calcComplexity(map[str, int] complexityLines, int totalLines)
 {
 	map[str, real] percentages = ();
-	total = (0 | it + complexityLines[e] | e <- complexityLines);		
 	
 	for(x <- complexityLines)
-		{percentages[x] = complexityLines[x] / (total / 1.0) * 100 ;}
+		{percentages[x] = complexityLines[x] / (totalLines / 1.0) * 100 ;}
 		
-	println("totalLines: <totalLines>");
-	println("total: <total>");		
 	return percentages;
 }
 
