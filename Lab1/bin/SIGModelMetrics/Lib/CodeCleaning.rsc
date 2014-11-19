@@ -12,7 +12,7 @@ import lang::java::jdt::m3::Core;
 import SIGModelMetrics::Lib::StringCleaning;
 
 //filter documentation out of file
-public str filterDocInFile(M3 model, loc file, set[loc] commentsInFile)
+public str filterDocInFile(M3 model, loc file, set[loc] commentsInFile, bool filterTabs)
 {
 	fileStr = readFile(file);
 	
@@ -25,7 +25,11 @@ public str filterDocInFile(M3 model, loc file, set[loc] commentsInFile)
 	  						docloc.offset + size(readFile(docloc)), 
 	  						" ");
 	}
-	return filterEmptyLines(fileStr);
+	
+  	if(filterTabs)
+ 		return filterExcessWhiteSpace(fileStr);
+  	else 
+  		return filterEmptyLines(fileStr);
 }
 
 public str filterDocInMethod(M3 model, loc method, set[loc] commentsInFile, bool filterTabs)

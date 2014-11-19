@@ -23,7 +23,7 @@ public int projectLinesOfCode(M3 model)
     	//filter all comments that are not in the file   
     	docsInFile = {doc | doc <- docLoc, file.path == doc.path};
     	//clean the comments out of the sourcecode, and filter empty lines
-    	cleanFile = filterDocInFile(model, file, docsInFile);
+    	cleanFile = filterDocInFile(model, file, docsInFile, false);
     	//add the linecount of the cleaned file to the total
     	totalLines = totalLines + size(split("\r\n", cleanFile));	
     }

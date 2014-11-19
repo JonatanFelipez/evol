@@ -4,49 +4,59 @@ import IO;
 import prelude;
 import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
-import util::Math;
 
-/*
-	tuple[where to find sequence, 
-	      min and max line numbers, 
-	      amount of times found duplicated
-	     ]
-*/
-alias seqRepres = tuple[loc file, tuple[int,int] minMax, int count];
+import SIGModelMetrics::Lib::CodeCleaning;
 
-public str runCloneDetection(M3 model){
+
+//The length of the sequence to check on
+int seqLen = 6;
+//To identify a sequence uniquely, define it by:
+alias id = tuple[
+	loc file, 	  // The file it is in
+	int	begin, 	  // The index of the first line of the sequence
+	int cnt];	  // The amount of times it is duplicated
+
+public real duplicatedPercentage(M3 model, int totalLines){
 	
-	//init hashset
-	map[str, seqRepres] hash = ();
+	//start with zero, save the transformed text 
+	//map[str, id] lines = ();
 	
-	//
-	for(file <- files(model)){
-		hash = scanFile(hash, f);
-	}
-	return calculateRank(uniqueLines(getDuplicatedSequences(hash)), 100);
+	// Iterate through all files
+	//for(file <- files(model))
+	//	hash = scanFile(hash, f);
+	
+	//build up the set of all sequences and how many times they occur 
+	map[str, id] sequences = (() | scanFile(hash, e, model) | f <- files );
+	int duplicatedLines =  (0 | it + allSeqs[e].cnt | e <- allSeqs ); 
+	
+	return duplicatedLines / (totalLines * 1.0);
 }
 
-//scans a file for duplicated code.
-private map[str, seqRepres] scanFile(map[str, seqRepres] hash, loc file)
+//Scans a file for duplicated code.
+private map[str, id] scanFile(map[str, id] sequences, loc file, M3 model)
 {
+	// public str filterDocInFile(M3 model, loc file, set[loc] commentsInFile, bool filterTabs)
+	
+	
 	//TODO: filter comments, tabs, excess whitespace, empty lines
 	cleanFileStr = readFile(file);
 	
+	//split the file into lines
 	lines = split("\r\n", cleanFileStr);
 	
-	for(i <- [0..size(source) - 6]){
+	for(i <- [0..size(lines) - seqLen]){
 		min = i;
-		max = i+6;
+		max = min + seqLen;
 		
-		str seqCode = "";
-		
-		for(j <- [min..max])
-			seqCode += source[j] + "\r\n";
-		
-		if(seqCode in hash)
-			hash[seqCode].count = hash[seqCode].count + 1;
+		//build up the sequence string
+		str sequence = ("" | it + lines[ii] | ii <- [min..max]);
+			
+		if(sequence in sequences)
+			sequences[sequence].cnt += 1; // hash[seqCode].count + 1;
 		else
-			hash[seqCode] = <file, <min,max>, file, 0>;
+			sequences[sequence] = <file, <min,max>, file, 0>;
 	}	
 	return hash;	
 }
+
+

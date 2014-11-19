@@ -57,8 +57,19 @@ public void allMetrics(loc project)
     				    
 	//////////////////////////////////////////////////////////////
 	println("=========== Unit Complexity  =============");
-	println("Metric not yet implemented!");
-	comp = complexity(model, unitSizes);
+	println("calculating unit complexity...\r\n");	
+	overalComplexity = complexity(model, unitSizes);
+	
+	complexityProcentage= calcComplexity(overalComplexity, unitLines);
+	complexityRisk = overalComplexityRisk(complexityProcentage);
+	
+    println("Risk due to unit size:");
+    println("Low       : <complexityProcentage["Low"]>%");
+    println("Moderate  : <complexityProcentage["Moderate"]>%");
+    println("High      : <complexityProcentage["High"]>%");
+    println("Very High : <complexityProcentage["Very High"]>%\r\n");
+    println(" Ranking: <rank>\r\n");
+
 	//////////////////////////////////////////////////////////////
 	println("=========== Code Duplication =============");	
 	println("Metric not yet implemented!");
