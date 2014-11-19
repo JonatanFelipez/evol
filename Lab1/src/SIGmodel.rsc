@@ -36,7 +36,7 @@ public void allMetrics(loc project)
 	                \r\n Ranking: <volumeRisk>\r\n");
 	//////////////////////////////////////////////////////////////
 	println("===========    Unit Size     =============");	
-	println("calculating size of units profile...\r\n");
+	println("calculating unit size Risk profile...\r\n");
 	
 	//Get a mapping from method to the cnt of lines of code
 	map[loc,int] unitSizes = unitSizes(model);	
@@ -75,10 +75,11 @@ public void allMetrics(loc project)
 	//////////////////////////////////////////////////////////////
 	println("=========== Code Duplication =============");	
 	percentage = duplicatedPercentage(model, linesOfCode);
-	println("Code duplication: <round(percentage)>");
+	println("Code duplication: <round(percentage)>%");
+	println(" Ranking: <getDuplicationRank(percantage)>");
 	
 	//////////////////////////////////////////////////////////////
-	println("=========== Overall =============");
+	println("===========     Overall      =============");
 	println("\t\t volume \t Complexity \t duplication \t size");
 	println("analysability ++ ++ ++ ++");	
 	
@@ -205,6 +206,19 @@ public map[str, real] calcComplexity(map[str, int] complexityLines, int totalLin
 }
 
 // Code Duplication //////////////////////////////////////////////
+public str getDuplicationRank(real percentage)
+{
+	if(percentage < 3.0)
+		return "++";
+	if(percentage < 5.0)
+		return "+";
+	if(percentage < 10.0)
+		return "o";
+	if(percentage < 20.0)
+		return "-";
+
+ 	return "++";
+}
 
 // Maintainability ///////////////////////////////////////////////
 	map[str, str] overallResults2 = (
