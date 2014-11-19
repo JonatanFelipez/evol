@@ -57,19 +57,19 @@ public map[str, int] complexity(M3 model, map[loc,int]unitSizes){
 			
 			methodSize = unitSizes[m@src];			
 			cnt = countComplexity(impl, 50);				
-			//countMethods += 1;		
+			countMethods += 1;		
 			for(x <- ["Very High", "High", "Moderate", "Low"])
 				if(cnt > unitComplexityRisk[x]){					
 					complexityLines[x] += methodSize;
 					break;
 					}	
 			} 
-		case m2: \method(_,_,_,_):{locations += m2@src; countMet2 += 1;}
+		case m2: \method(_,_,_,_):{method2Size = unitSizes[m2@src]; complexityLines["Low"] += method2Size;}
 		case c: \constructor(_,_,_, Statement impl):{			
 				
 				ConstructorSize = unitSizes[c@src];				
 				cnt = countComplexity(impl, 50);
-				//countConst += 1;	
+				countConst += 1;	
 				
 				for(x <- ["Very High", "High", "Moderate", "Low"])
 				if(cnt > unitComplexityRisk[x]){					
@@ -78,7 +78,7 @@ public map[str, int] complexity(M3 model, map[loc,int]unitSizes){
 					}	
 				}				 				
 	}
-	//println("number of const and meth: <countConst + countMethods + countMet2>");
+	println("number of const and meth: <countConst + countMethods + countMet2>");
 	return complexityLines;	
 }
 
