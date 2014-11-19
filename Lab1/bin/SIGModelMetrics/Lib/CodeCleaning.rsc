@@ -26,10 +26,13 @@ public str filterDocInFile(loc file, set[loc] commentsInFile, bool filterTabs)
 	  						docloc.offset + size(readFile(docloc)), 
 	  						" ");
 	}
-	assert size(fileStr) == size(backup) : "filterDocInFile size(fileStr) != size(backup)";
+	assert size(fileStr) == size(backup) : "filterDocInFile size(fileStr) != size(backup)";	
 	
   	if(filterTabs)
- 		return filterExcessWhiteSpace(fileStr);
+  	{
+  		res = filterExcessWhiteSpace(fileStr);
+  		return res;
+  	}
   	else 
   		return filterEmptyLines(fileStr);
 }

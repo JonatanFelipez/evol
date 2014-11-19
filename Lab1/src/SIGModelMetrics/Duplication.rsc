@@ -20,7 +20,7 @@ public void testDup(loc proj){
 	
 	model = createM3FromEclipseProject(proj);
 	
-	x = duplicatedPercentage(model,	14);	
+	x = duplicatedPercentage(model,	24224);	
 	println(x);
 }
 
@@ -30,10 +30,11 @@ public real duplicatedPercentage(M3 model, int totalLines){
 	map[str, id] empty = ();
 	map[str, id] sequences = (empty | processFile(it, f, model) | f <- files(model) );
 	
-	int duplicatedLines =  (0 | it + sequences[e].cnt | e <- sequences); 
-	assert duplicatedLines < totalLines : "duplicatedLines bigger than total lines of code";
+	int uniqueLines =  (0 | it + 1 | e <- sequences, sequences[e].cnt == 1); 
 	
-	percentage = duplicatedLines / (totalLines * 1.0) * 100 ;
+	assert uniqueLines <= totalLines : "uniqueLines bigger than total lines of code";
+	
+	percentage = 100.0 - uniqueLines / (totalLines * 1.0) * 100 ;
 	assert percentage <= 100 && percentage >= 0 : "duplication not between 0% and 100%";
 	return percentage;
 }
@@ -41,6 +42,7 @@ public real duplicatedPercentage(M3 model, int totalLines){
 //Scans a file for duplicated code.
 private map[str, id] processFile(map[str, id] sequenceMap, loc file, M3 model)
 {
+
 	set[loc] docLoc = range(model@documentation);
 	set[loc] docsInFile = {doc | doc <- docLoc, file.path == doc.path};	
 	
@@ -56,20 +58,17 @@ private map[str, id] processFile(map[str, id] sequenceMap, loc file, M3 model)
 	for(i <- [0..size(lines) - seqLen]){
 		int min = i;
 		int max = min + seqLen;
-		
+				
 		//build up the sequence string
 		str sequence = ("" | it + lines[ii] | ii <- [min..max]);
 			
 		if(sequence in sequenceMap)
 		{
 			id x = sequenceMap[sequence];  
-			if(x.cnt == 0)
-				sequenceMap[sequence] = <x.file, x.begin, x.cnt + 2>;
-			else
-				sequenceMap[sequence] = <x.file, x.begin, x.cnt + 1>;
+			sequenceMap[sequence] = <x.file, x.begin, x.cnt + 1>;
 		}
 		else
-			sequenceMap[sequence] = <file, min, 0>;
+			sequenceMap[sequence] = <file, min, 1>;
 	}
 	return sequenceMap;	
 }
