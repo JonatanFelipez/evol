@@ -47,28 +47,39 @@ public map[str, int] complexity(M3 model, map[loc,int]unitSizes){
 	
 	int cnt = 0;
 	set[Declaration] decls = createAstsFromEclipseProject(model.id, true); //need a tree to look for statements and declarations
+	int countMethods= 0;
+	int countConst = 0;
+	int countMet2 = 0;
+	set[loc] locations ={};
 		
 	visit(decls){
 		case m: \method(_,_,_,_, Statement impl):{							
-			methodSize = unitSizes[m@src];
+			
+			methodSize = unitSizes[m@src];			
 			cnt = countComplexity(impl, 50);				
-								
+			//countMethods += 1;		
 			for(x <- ["Very High", "High", "Moderate", "Low"])
 				if(cnt > unitComplexityRisk[x]){					
-					complexityLines[x] = complexityLines[x] + methodSize;
+					complexityLines[x] += methodSize;
+					break;
 					}	
 			} 
-		case c: \constructor(_,_,_, Statement impl, 50):{			
-				methodeSize = unitSizes[c@src];
+		case m2: \method(_,_,_,_):{locations += m2@src; countMet2 += 1;}
+		case c: \constructor(_,_,_, Statement impl):{			
+				
+				ConstructorSize = unitSizes[c@src];				
 				cnt = countComplexity(impl, 50);
+				//countConst += 1;	
 				
 				for(x <- ["Very High", "High", "Moderate", "Low"])
 				if(cnt > unitComplexityRisk[x]){					
-					complexityLines[x] = complexityLines[x] + methodSize;
+					complexityLines[x] += ConstructorSize;
+					break;
 					}	
 				}				 				
-	}	
-	return complexityLines;
+	}
+	//println("number of const and meth: <countConst + countMethods + countMet2>");
+	return complexityLines;	
 }
 
 //This method calculates the complexity of the statement is is given.
