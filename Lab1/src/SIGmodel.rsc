@@ -12,6 +12,7 @@ import lang::java::jdt::m3::Core;
 //Utility Libraries
 import SIGModelMetrics::Lib::StringCleaning;
 import SIGModelMetrics::Lib::CodeCleaning;
+import Config;
 
 //Metric Libraries
 import SIGModelMetrics::OveralSize;
@@ -59,48 +60,39 @@ public void allMetrics(loc project)
     				    
 	//////////////////////////////////////////////////////////////
 	println("=========== Unit Complexity  =============");
-	println("calculating unit complexity...\r\n");	
 	overalComplexity = complexity(model, unitSizes);
 	
 	complexityProcentage= calcComplexity(overalComplexity, unitLines);
 	complexityRisk = overalComplexityRisk(complexityProcentage);
 	
-    println("Risk due to unit size:");
-    println("Low       : <complexityProcentage["Low"]>%");
-    println("Moderate  : <complexityProcentage["Moderate"]>%");
-    println("High      : <complexityProcentage["High"]>%");
-    println("Very High : <complexityProcentage["Very High"]>%\r\n");
+    println("\r\nRisk due to unit complexity:");
+    println("Low       : <round(complexityProcentage["Low"])>%");
+    println("Moderate  : <round(complexityProcentage["Moderate"])>%");
+    println("High      : <round(complexityProcentage["High"])>%");
+    println("Very High : <round(complexityProcentage["Very High"])>%\r\n");
     println(" Ranking: <complexityRisk>\r\n");
 
 	//////////////////////////////////////////////////////////////
 	println("=========== Code Duplication =============");	
 	percentage = duplicatedPercentage(model, linesOfCode);
-	println("Code duplication: <round(percentage)>%");
+	println("Amount of code duplication: <round(percentage)>%");
 	duplicationRanking = calcDuplicatedRank(percentage);
-	println(" Ranking: <duplicationRanking>");
+	println(" Ranking: <duplicationRanking>\r\n");
 	
 	//////////////////////////////////////////////////////////////
 	println("===========     Overall      =============");
 	
 	map[str, str] overallResults = (
-	"volume" : volumeRisk, 
+	"volume" : 	   volumeRisk, 
 	"complexity" : complexityRisk,
 	"duplication": duplicationRanking,
-	"unitSize": rank
+	"unitSize": 	rank
 	);
 	
 	res = calcMaintainability(overallResults);
 }
 
 // Overal Volume /////////////////////////////////////////////////
-map[str, int] systemSizeRankings = (
-	"--" : 1310000,
-	"-"	 : 655000,
-	"o"  : 246000,
-	"+"	 : 66000,
-	"++" : 0
-);
-
 public int overalVolume(M3 model)
 {return projectLinesOfCode(model);}
 
@@ -112,26 +104,10 @@ public str overalVolumeRisk(int linesOfCode)
 }
 
 // Unit Size /////////////////////////////////////////////////////
-map[str, int] unitSizeRisk = (
-	"Low" : 0,
-	"Moderate" : 21,
-	"High" : 51,
-	"Very High" : 101
-);
-
-map[str, list[int]] unitSizeRank = (
-	 "++" : [0,  0,  0],
-	 "+"  : [25, 0,  0],
-	 "o"  : [30, 5 , 0],
-	 "-"  : [40, 10, 0],
-	 "--" : [50, 15, 5]
-	);
 public list[int] catUnitSize(model, map[loc,int] unitSize)
 {
-	r = calcRiskProfile(unitSize);
-	
-	total = (0 | it + r[e] | e <- r);
-	
+	r = calcRiskProfile(unitSize);	
+	total = (0 | it + r[e] | e <- r);	
 	
 	list[int] relRisk = 
 		[
@@ -171,17 +147,7 @@ public map[str,int] calcRiskProfile(map[loc,int] unitLines)
 	return riskLines;
 }
 
-
 // Unit Complexity  //////////////////////////////////////////////
-map[str, map[str, real]] systemComplexityRankings = (
-	"--" : ("Moderate" : 50.0, "High" : 15.0, "Very High" : 5.0 ),
-	"-"	 : ("Moderate" : 40.0, "High" : 10.0, "Very High" : 0.0 ),
-	"o"  : ("Moderate" : 30.0, "High" : 5.0,  "Very High" : 0.0 ),
-	"+"	 : ("Moderate" : 25.0, "High" : 0.0,  "Very High" : 0.0 ),
-	"++" : ("Moderate" : 0.0,  "High" : 0.0,  "Very High" : 0.0 )
-);
-
-
 public map[str, real] testCaclCom(M3 model)
 {
 	k = testComplexity(model);
@@ -212,123 +178,70 @@ public map[str, real] calcComplexity(map[str, int] complexityLines, int totalLin
 }
 
 // Code Duplication //////////////////////////////////////////////
-public str getDuplicationRank(real percentage)
-{
-	if(percentage < 3.0)
-		return "++";
-	if(percentage < 5.0)
-		return "+";
-	if(percentage < 10.0)
-		return "o";
-	if(percentage < 20.0)
-		return "-";
-
- 	return "++";
-}
-
-map[str, int] duplicatedRank = (
-	 "++" : 3,
-	 "+"  : 5,
-	 "o"  : 10,
-	 "-"  : 20,
-	 "--" : 101
-	);
-
 public str calcDuplicatedRank(real percentage)
 {
-	for(k <- ["++", "+", "o", "-","--"])
-  		if(percentage < duplicatedRank[k] ||
-  		   percentage < duplicatedRank[k] ||
-  		   percentage < duplicatedRank[k] 
-  		   )
-	   return k;
-	return "++";
+	for(r <- ["++", "+", "o", "-"])
+		if(percentage < duplicatedRank[r])
+			return r;
+ 	return "--";
 }
-// Maintainability ///////////////////////////////////////////////	
-	map[str, int] resultsValues = (
-	"++" : 2,
-	"+" : 1,
-	"o": 0,
-	"-": -1,
-	"--": -2
-	);
-	
+// Maintainability ///////////////////////////////////////////////		
 map[str, str] calcMaintainability(map[str, str] overallResults)
 {
+	ranks = ["++", "+", "o", "-"];
+
 	map[str, str] results = (
-	"Analysability" : "++",
-	"Changeability" : "++",	
-	"Testability" : "++"	
-	); //"Stability": "++",
+	"Analysability"  : "--",
+	"Changeability"  : "--",	
+	"Testability"    : "--"	
+	); //"Stability" : "--",
 	
 	//========Analysability==========
-	Analysability = resultsValues[overallResults["volume"]] + 
-					resultsValues[overallResults["duplication"]] + 
-					resultsValues[overallResults["unitSize"]];	
-	
-	if(Analysability > 0){
-		if(Analysability > 1){
-			results["Analysability"] = "++";
-		}else
-		{
-			results["Analysability"] = "+";
+	Analysability = (resultsValues[overallResults["volume"]] + 
+					 resultsValues[overallResults["duplication"]] + 
+					 resultsValues[overallResults["unitSize"]]) / 3;	
+	 
+	 for(x <- ranks)
+	 	if(Analysability >= resultsValues[x])
+	 	{
+	 		results["Analysability"] = x;
+	 		break;
 		}
-	}else if(Analysability < 0)
-	{
-		if(Analysability < -1){
-			results["Analysability"] = "--";
-		}else
-		{
-			results["Analysability"] = "-";
-		}
-	}else{
-		results["Analysability"] = "o";
-	}
 	//========Changeability==========
-	Changeability = resultsValues[overallResults["complexity"]] + 
-					resultsValues[overallResults["duplication"]];
-	if(Changeability > 0){
-		if(Changeability > 1){
-			results["Changeability"] = "++";
-		}else
-		{
-			results["Changeability"] = "+";
+	Changeability = (resultsValues[overallResults["complexity"]] + 
+					resultsValues[overallResults["duplication"]]) / 2;
+
+	 for(x <- ranks)
+	 	if(Changeability >= resultsValues[x])
+	 	{
+	 		results["Changeability"] = x;
+	 		break;
 		}
-	}else if(Changeability < 0)
-	{
-		if(Changeability < -1){
-			results["Changeability"] = "--";
-		}else
-		{
-			results["Changeability"] = "-";
-		}
-	}else{
-		results["Changeability"] = "o";
-	}
 	//========Testability==========
-	Testability = resultsValues[overallResults["complexity"]] + resultsValues[overallResults["unitSize"]]; //unit testing
-	if(Testability > 0){
-		if(Testability > 1){
-			results["Testability"] = "++";
-		}else
-		{
-			results["Testability"] = "+";
+	Testability = (resultsValues[overallResults["complexity"]] + 
+				  resultsValues[overallResults["unitSize"]]) / 2; //unit testing
+
+	 for(x <- ranks)
+	 	if(Changeability >= resultsValues[x])
+	 	{
+	 		results["Testability"] = x;
+	 		break;
 		}
-	}else if(Changeability < 0)
-	{
-		if(Changeability < -1){
-			results["Testability"] = "--";
-		}else
-		{
-			results["Testability"] = "-";
-		}
-	}else{
-		results["Testability"] = "o";
-	}		
+				 	
+	println("Analysability: <results["Analysability"]> (Volume, Duplication, Unit Size)");
+	println("Changeability: <results["Changeability"]> (Unit Complexity, Duplication)");
+	println("Testability:   <results["Testability"] > (Unit Complexity, Unit Size)\r\n");
 	
-	println("Analysability: <results["Analysability"]>");
-	println("Changeability: <results["Changeability"]>");
-	println("Testability: <results["Testability"]>");
+	 avgMaintVal = (Analysability + Changeability + Testability) / 3.0;
+	 avgMaint = "--";
+	 for(x <- ranks)
+	 	if(avgMaintVal >= resultsValues[x])
+	 	{
+	 		avgMaint = x;
+	 		break;
+		}
+	
+	println("Overall Maintainability: <avgMaint>");
 	
 	return results;
 }

@@ -64,7 +64,10 @@ public map[str, int] complexity(M3 model, map[loc,int]unitSizes){
 					break;
 					}	
 			} 
-		case m2: \method(_,_,_,_):{method2Size = unitSizes[m2@src]; complexityLines["Low"] += method2Size;}
+			
+		case m2: \method(_,_,_,_):
+			{countMet2 +=1; method2Size = unitSizes[m2@src]; complexityLines["Low"] += method2Size;}
+			
 		case c: \constructor(_,_,_, Statement impl):{			
 				
 				ConstructorSize = unitSizes[c@src];				
@@ -117,7 +120,7 @@ int countComplexity(Statement stat, int limit)
 			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}		
 	}
 	
-	assert cnt < 1 : "Unit Complexity: cnt is smaller then one";
+	assert cnt > 0 : "Unit Complexity: cnt is smaller then one";
 	assert limit > 0 : "Unit Complexity: limit is zero";
 	
 	return cnt;
@@ -132,8 +135,7 @@ int countCondition(Expression condition)
 	top-down-break visit(condition){
 		case \infix(_,str operator, Expression rhs): 
 			cnt += 1 + countCondition(rhs);
-	}
+	}	
 	
-	assert cnt > 0 : "Unit Complexity: the number of conditions found is <cnt>!";
 	return cnt;
 }
