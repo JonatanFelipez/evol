@@ -70,19 +70,26 @@ public void allMetrics(loc project)
     println("Moderate  : <complexityProcentage["Moderate"]>%");
     println("High      : <complexityProcentage["High"]>%");
     println("Very High : <complexityProcentage["Very High"]>%\r\n");
-    println(" Ranking: <rank>\r\n");
+    println(" Ranking: <complexityRisk>\r\n");
 
 	//////////////////////////////////////////////////////////////
 	println("=========== Code Duplication =============");	
 	percentage = duplicatedPercentage(model, linesOfCode);
 	println("Code duplication: <round(percentage)>%");
-	println(" Ranking: <getDuplicationRank(percantage)>");
+	duplicationRanking = calcDuplicatedRank(percentage);
+	println(" Ranking: <duplicationRanking>");
 	
 	//////////////////////////////////////////////////////////////
 	println("===========     Overall      =============");
-	println("\t\t volume \t Complexity \t duplication \t size");
-	println("analysability ++ ++ ++ ++");	
 	
+	map[str, str] overallResults = (
+	"volume" : volumeRisk, 
+	"complexity" : complexityRisk,
+	"duplication": duplicationRanking,
+	"unitSize": rank
+	);
+	
+	res = calcMaintainability(overallResults);
 }
 
 // Overal Volume /////////////////////////////////////////////////
@@ -237,14 +244,7 @@ public str calcDuplicatedRank(real percentage)
 	   return k;
 	return "++";
 }
-// Maintainability ///////////////////////////////////////////////
-	map[str, str] overallResults2 = (
-	"volume" : "++", 
-	"complexity" : "--",
-	"duplication": "-",
-	"unitSize":"0"
-	);
-	
+// Maintainability ///////////////////////////////////////////////	
 	map[str, int] resultsValues = (
 	"++" : 2,
 	"+" : 1,
@@ -264,9 +264,7 @@ map[str, str] calcMaintainability(map[str, str] overallResults)
 	//========Analysability==========
 	Analysability = resultsValues[overallResults["volume"]] + 
 					resultsValues[overallResults["duplication"]] + 
-					resultsValues[overallResults["unitSize"]];
-	
-	println("Analysability: <Analysability>");
+					resultsValues[overallResults["unitSize"]];	
 	
 	if(Analysability > 0){
 		if(Analysability > 1){
@@ -305,7 +303,7 @@ map[str, str] calcMaintainability(map[str, str] overallResults)
 			results["Changeability"] = "-";
 		}
 	}else{
-		results["Changeability"] = "0";
+		results["Changeability"] = "o";
 	}
 	//========Testability==========
 	Testability = resultsValues[overallResults["complexity"]] + resultsValues[overallResults["unitSize"]]; //unit testing
@@ -325,12 +323,13 @@ map[str, str] calcMaintainability(map[str, str] overallResults)
 			results["Testability"] = "-";
 		}
 	}else{
-		results["Testability"] = "0";
-	}
-	
+		results["Testability"] = "o";
+	}	
 	
 	println("=========== Overall =============");
-	println("\t\f volume \f Complexity \f duplication \f size");
+	println("analysability: <results["Analysability"]>");
+	println("Changeability: <results["Changeability"]>");
+	println("Testability: <results["Testability"]>");
 	
 	return results;
 }
