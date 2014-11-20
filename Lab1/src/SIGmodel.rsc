@@ -324,10 +324,9 @@ map[str, str] calcMaintainability(map[str, str] overallResults)
 		}
 	}else{
 		results["Testability"] = "o";
-	}	
+	}		
 	
-	println("=========== Overall =============");
-	println("analysability: <results["Analysability"]>");
+	println("Analysability: <results["Analysability"]>");
 	println("Changeability: <results["Changeability"]>");
 	println("Testability: <results["Testability"]>");
 	

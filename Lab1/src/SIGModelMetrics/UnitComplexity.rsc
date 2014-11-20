@@ -64,7 +64,10 @@ public map[str, int] complexity(M3 model, map[loc,int]unitSizes){
 					break;
 					}	
 			} 
-		case m2: \method(_,_,_,_):{method2Size = unitSizes[m2@src]; complexityLines["Low"] += method2Size;}
+			
+		case m2: \method(_,_,_,_):
+			{countMet2 +=1; method2Size = unitSizes[m2@src]; complexityLines["Low"] += method2Size;}
+			
 		case c: \constructor(_,_,_, Statement impl):{			
 				
 				ConstructorSize = unitSizes[c@src];				
@@ -113,7 +116,7 @@ int countComplexity(Statement stat, int limit)
 			if(cnt > limit){return cnt;}else{cnt+=1;}
  		case \try(_,_,_): //try-catch-finally
  			if(cnt > limit){return cnt;}else{cnt+=1;}
-		case \throw(_): //throw
+		case \throw(Expression condition): //throw
 			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}		
 	}
 	
