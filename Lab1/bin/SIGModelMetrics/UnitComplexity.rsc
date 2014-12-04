@@ -115,12 +115,10 @@ int countComplexity(Statement stat, int limit)
 		case \try(_,_): //try-catch
 			if(cnt > limit){return cnt;}else{cnt+=1;}
  		case \try(_,_,_): //try-catch-finally
- 			if(cnt > limit){return cnt;}else{cnt+=1;}
-		case \throw(Expression condition): //throw
-			if(cnt > limit) {return cnt;}else{cnt += countCondition(condition);}		
+ 			if(cnt > limit){return cnt;}else{cnt+=1;}				
 	}
 	
-	assert cnt > 0 : "Unit Complexity: cnt is smaller then one";
+	assert cnt > 0 : "Unit Complexity: cnt is smaller or equal to zero";
 	assert limit > 0 : "Unit Complexity: limit is zero";
 	
 	return cnt;
