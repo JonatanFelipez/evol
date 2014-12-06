@@ -9,6 +9,126 @@ import lang::java::jdt::m3::Core;
 import lang::java::m3::AST;
 import lang::java::jdt::m3::AST;
 
+public void testCloneDetection()
+{
+	//M3 model = createM3FromEclipseProject(|project://testproject/src/Testcase.java|);
+	M3 model = createM3FromEclipseProject(|project://smallsql|);
+	println("computed M3, starting cloneDetection Method");
+	map[str, set[Declaration]] result = cloneDetection(model, 50);
+	
+	for(x <- result)
+	{
+		int i = 0;
+		println("Tree type: <x>");
+		for(y <- result[x])
+		{
+			if(i < 10)
+			{
+				try{
+					println("location <i>: <y@src>");
+					i += 1;	
+				}
+				catch NoSuchAnnotation(l) : 
+					{
+						;//println("no annotation src for <x>");
+						//iprint(result[x]);
+					}
+			}
+			else 
+			  break;
+		 }
+	}	
+}
+
+public map[str, set[Declaration]] cloneDetection(M3 model, int threshold) {
+
+	set[Declaration] decls = createAstsFromEclipseProject(model.id, true);
+	println("AST made");
+	//iprint(decls);
+
+	set[Declaration] emptyBucket = {};
+	
+	//buckets
+	map[str, set[Declaration]] buckets = (
+		"compilationUnit" : {},
+		"compilationUnitInPackage" : {},
+		"enum" : {},
+		"enumConstant" : {},
+		"enumConstantClass" : {},
+		"class" : {},
+		"anonClass" : {},
+		"interface" : {},
+		"field" : {},
+		"initializer" : {},
+		"method" : {},
+		"emptyMethod" : {},
+		"constructor" : {},
+		"imports" : {},
+		//"package" : {},
+		//"parentPackage" : {},
+		"variables" : {},			//special, locations per variable, multiple variable on one line: int a,b,c,d;
+		"typeParameter" : {},
+		"annotationType" : {},
+		"annotationTypeMember" : {},
+		"annotationTypeMemberDefault" : {},
+		"parameter" : {},
+		"vararg" : {}
+	);
+		
+	//hash all subtrees to buckets
+	//todo: check if nodemass is big enough 
+		visit(decls){		
+	    case x : \compilationUnit(imports, types) : 				 
+	    	{ buckets["compilationUnit"] += {x}; } 
+        case x : \compilationUnit(package, y, types) : 				 
+	    	{ buckets["compilationUnitInPackage"] += {x}; }    
+        case x : \enum(name, implements, constants, body)  : 		 
+	    	 { buckets["enum"] += {x}; }
+        case x : \enumConstant(name, arguments, class) : 
+	    	 { buckets["enumConstant"] += {x}; }
+        case x : \enumConstant(name, arguments)  : 
+			 { buckets["enumConstantClass"] += {x}; }
+        case x : \class(name, extends, implements, body)  : 
+			 { buckets["class"] += {x}; }
+        case x : \class(body)  : 
+			 { buckets["anonClass"] += {x}; }
+        case x : \interface(name, extends, implements, body)  : 
+			 { buckets["interface"] += {x}; }
+        case x : \field(\type, fragments)  : 
+			 { buckets["field"] += {x}; }
+        case x : \initializer(initializerBody)  : 
+	    	 { buckets["initializer"] += {x}; }
+        case x : \method(\return, name, parameters, exceptions, impl) : 
+	    	 { buckets["method"] += {x}; }
+        case x : \method(\return, name, parameters, exceptions)  : 
+	    	 { buckets["emptyMethod"] += {x}; }
+        case x : \constructor(name, parameters, exceptions, impl)  : 
+	    	 { buckets["constructor"] += {x}; }
+        case x : \import(name)  : 
+   			 { buckets["imports"] += {x}; }
+        //case x : \package(name)  : 
+        //     { buckets["package"] += {x}; }
+        //case x : \package(parentPackage, name)  : 
+        //     { buckets["parentPackage"] += {x}; }
+        case x : \variables(\type, \fragments) : 
+             { buckets["variables"] += {x}; }
+        case x : \typeParameter(name, extendsList)  : 
+             { buckets["typeParameter"] += {x}; }
+        case x : \annotationType(name, body)  : 
+             { buckets["annotationType"] += {x}; }
+        case x : \annotationTypeMember(\type, name)  : 
+             { buckets["annotationTypeMember"] += {x}; }
+        case x : \annotationTypeMember(\type, name, defaultBlock)  : 
+             { buckets["annotationTypeMemberDefault"] += {x}; }
+        case x : \parameter(\type, name, extraDimensions)  : 
+             { buckets["parameter"] += {x}; }
+        case x : \vararg(\type, name)  : 
+             { buckets["vararg"] += {x}; }
+	}    		
+	
+	return buckets;
+}
+
 public set[Declaration] cloneDetection(M3 model, int threshold){
 
 	set[Declaration] decls = createAstsFromEclipseProject(model.id, true); //need a tree to look for statements and declarations
@@ -79,14 +199,14 @@ Statement ripStatements(Statement state)
     case \constructorCall(bool isSuper, list[Expression] arguments):{;}
 	}
 }
-
+/*
 list[Expression] ripListExpression(list[Expression] exp)
 {
-	return |x|x<-exp|ripExpression(x)|;
 }
 
-Expression ripExpression(Expression exp)
+public Expression ripExpression(Expression exp)
 {
+
 	return visit(exp){
 	case \arrayAccess(Expression array, Expression index) => \arrayAccess(ripExpression(array), ripExpression(index))
     case \newArray(Type \type, list[Expression] dimensions, Expression init) => \newArray(\type, dimensions, ripExpression(init))
@@ -127,7 +247,9 @@ Expression ripExpression(Expression exp)
     case \memberValuePair(str name, Expression \value)             
     case \singleMemberAnnotation(str typeName, Expression \value)
 	}
+
 }
+*/
 
 int cloneBodyDetection(Statement stat, int limit)
 {	
