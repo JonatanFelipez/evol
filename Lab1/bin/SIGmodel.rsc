@@ -1,4 +1,4 @@
-module SIGmodel
+		qqmodule SIGmodel
 import Prelude;
 import String;
 import IO;

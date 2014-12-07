@@ -10,16 +10,29 @@ import lang::java::m3::AST;
 import lang::java::jdt::m3::AST;
 
 int threshold = 6;
+//set[Declaration]
 
-public set[Declaration] getAST()
+public void getAST()
 {
- 	M3 model = createM3FromEclipseProject(|project://testproject|);
-	return createAstsFromEclipseProject(model.id, true);
+ 	M3 model = createM3FromEclipseProject(|project://hsqldb|);
+	decls = createAstsFromEclipseProject(model.id, false);
+	
+	/* This also creates a stackoverflow but does work on smaller programs. Unfortanatlly createAstsFromEclipseProject does the same thing. It could be used to split the project.
+	
+	set[Declaration] decls = {};
+		for(file <-files(model))
+	{
+		createAstFromFile(file, true); //this was a test to see if this was faster. i can't measure the difference yet. DO NOT RUN THIS USING IPRINT UNLESS YOU WANT TO BUY A NEW MACHINE!!!		
+	}
+	iprint(decls);*/
+	
+	println("m3 files size is: <size(files(model))>");	
+	println("ast size is: <size(decls)>");
 }
 
 public void testCloneDetection()
 {
-	M3 model = createM3FromEclipseProject(|project://testproject|);
+	M3 model = createM3FromEclipseProject(|project://hsqldb|);
 	//M3 model = createM3FromEclipseProject(|project://smallsql|);
 	println("computed M3, starting cloneDetection Method");
 	map[str, set[Declaration]] result = bucketSortDecl(model, threshold);	
@@ -76,7 +89,7 @@ public map[str, list[Declaration]] groupClones(map[str, set[Declaration]] bucket
 
 public map[str, set[Declaration]] bucketSortDecl(M3 model, int threshold) {
 
-	set[Declaration] decls = createAstsFromEclipseProject(model.id, true);
+	set[Declaration] decls = createAstsFromEclipseProject(model.id, false);
 	println("AST made, bucket sorting decls...");
 
 	set[Declaration] emptyBucket = {};
