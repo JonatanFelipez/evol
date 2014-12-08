@@ -12,7 +12,12 @@ import lang::java::m3::AST;
 import lang::java::jdt::m3::AST;
 
 @memo
-value getMyExampleData(int input) = ...;
+//value getMyExampleData(int input)
+
+public test bool test_sizeOfTree(Statement state, int numberOfNodes)
+{
+	return sizeOfTree(state) == numberOfNodes;
+}
 
 public test bool test_getAST()
 {

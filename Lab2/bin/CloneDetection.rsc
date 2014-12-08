@@ -14,7 +14,7 @@ int threshold = 6;
 
 public void getAST()
 {
- 	M3 model = createM3FromEclipseProject(|project://hsqldb|);
+ 	M3 model = createM3FromEclipseProject(|project://testproject|);
 	decls = createAstsFromEclipseProject(model.id, false);
 	
 	/* This also creates a stackoverflow but does work on smaller programs. Unfortanatlly createAstsFromEclipseProject does the same thing. It could be used to split the project.
@@ -25,6 +25,12 @@ public void getAST()
 		createAstFromFile(file, true); //this was a test to see if this was faster. i can't measure the difference yet. DO NOT RUN THIS USING IPRINT UNLESS YOU WANT TO BUY A NEW MACHINE!!!		
 	}
 	iprint(decls);*/
+	
+	visit(decls)
+	{
+		case m : \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): {println("name : <m@src> size of tree is: <sizeOfTree(impl)>"); iprint(impl);}
+		
+	}
 	
 	println("m3 files size is: <size(files(model))>");	
 	println("ast size is: <size(decls)>");
@@ -213,6 +219,54 @@ map[str, set[Statement]] ripStatements(Statement state)
     case \constructorCall(bool isSuper, list[Expression] arguments):{;}
 	}
 }
+public int sizeOfDeclaration(Declaration decl)
+{	
+	cnt = 0;
+	visit(decl){
+		case i: \initializer(Statement initializerBody):{println("name : Initializer"); println("source : <i@src>"); cnt += sizeOfTree(initializerBody);}
+		case m: \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl):{println("name : <name>"); println("source: <m@src>"); cnt += sizeOfTree(impl); println("sizeOfTree : <sizeOfTree(impl)>");}	
+		case c: \constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) :{println("name : <name>"); println("source : <c@src>"); cnt += sizeOfTree(impl);  println("sizeOfTree : <sizeOfTree(impl)>");}
+	}
+	return cnt;
+}
+public int sizeOfTree(Statement state)
+{	
+	int cnt = 0;
+	top-down-break visit(state){
+	case \assert(_):{cnt += 1;}
+    case \assert(_, _):{cnt += 1;}
+    case \block(list[Statement] statements):{for(stat <- statements){cnt += sizeOfTree(stat);} cnt += 1;}
+    case \break():{cnt += 1;}
+    case \break(_):{cnt += 1;}
+    case \continue():{cnt += 1;}
+    case \continue(_):{cnt += 1;}
+    case \do(Statement body, _):{cnt += sizeOfTree(body) + 1;}
+    case \empty():{cnt += 1;}
+    case \foreach(_, _, Statement body):{cnt += sizeOfTree(body) + 1;}
+    case \for(_, _, _, Statement body):{cnt += sizeOfTree(body) + 1;}
+    case \for(_, _, Statement body):{cnt += sizeOfTree(body) + 1;}
+    case \if(_, Statement thenBranch):{cnt += sizeOfTree(thenBranch) + 1;}
+    case \if(_, Statement thenBranch, Statement elseBranch):{cnt += sizeOfTree(elseBranch) + sizeOfTree(thenBranch) + 1;}
+    case \label(_, Statement body):{cnt += sizeOfTree(body) + 1;}
+    case \return(_):{cnt += 1;}
+    case \return():{cnt += 1;}
+    case \switch(_, list[Statement] statements):{for(stat <- statements){cnt += sizeOfTree(stat);} cnt += 1;}
+    case \case(_):{cnt += 1;}
+    case \defaultCase():{cnt += 1;}
+    case \synchronizedStatement(_, Statement body):{cnt+= sizeOfTree(body)+1;}
+    case \throw(_):{cnt += 1;}
+    case \try(Statement body, list[Statement] catchClauses):{for(stat <- catchClauses){cnt += sizeOfTree(stat);} cnt+= sizeOfTree(body) + 1;}
+    case \try(Statement body, list[Statement] catchClauses, Statement \finally):{for(stat <- catchClauses){cnt += sizeOfTree(stat);} cnt+= sizeOfTree(body) + 1;}                                        
+    case \catch(_, Statement body):{cnt += sizeOfTree(body) + 1;}
+    case \declarationStatement(_):{cnt += 1;}
+    case \while(_, Statement body):{cnt += sizeOfTree(body) + 1;}
+    case \expressionStatement(_):{cnt += 1;}
+    case \constructorCall(_,_,_):{cnt += 1;}
+    case \constructorCall(_, _):{cnt += 1;}
+    }
+    return cnt;
+}
+
 /*
 list[Expression] ripListExpression(list[Expression] exp)
 {
@@ -261,6 +315,5 @@ public Expression ripExpression(Expression exp)
     case \memberValuePair(str name, Expression \value)             
     case \singleMemberAnnotation(str typeName, Expression \value)
 	}
-
 }
 */
