@@ -132,100 +132,65 @@ public map[str, set[Declaration]] bucketSortDecl(M3 model, int threshold) {
 	//todo: check if nodemass is big enough 
 		visit(decls){		
 	    //case x : \compilationUnit(imports, types) : 				 
-	    //	{ buckets["compilationUnit"] += {x}; } 
+	    //	{ sizeOfDeclaration(x) >= threshold )buckets["compilationUnit"] += {x}; } 
         //case x : \compilationUnit(package, y, types) : 				 
-	    //	{ buckets["compilationUnitInPackage"] += {x}; }    
+	    //	{ sizeOfDeclaration(x) >= threshold )buckets["compilationUnitInPackage"] += {x}; }    
         //case x : \enum(name, implements, constants, body)  : 		 
-	    //	 { buckets["enum"] += {x}; }
+	    //	 { sizeOfDeclaration(x) >= threshold )buckets["enum"] += {x}; }
         //case x : \enumConstant(name, arguments, class) : 
-	    //	 { buckets["enumConstant"] += {x}; }
+	    //	 { sizeOfDeclaration(x) >= threshold )buckets["enumConstant"] += {x}; }
         //case x : \enumConstant(name, arguments)  : 
-		//	 { buckets["enumConstantClass"] += {x}; }
+		//	 { sizeOfDeclaration(x) >= threshold )buckets["enumConstantClass"] += {x}; }
         //case x : \class(name, extends, implements, body)  : 
-		//	 { buckets["class"] += {x}; }
+		//	 { sizeOfDeclaration(x) >= threshold )buckets["class"] += {x}; }
         //case x : \class(body)  : 
-		//	 { buckets["anonClass"] += {x}; }
+		//	 { sizeOfDeclaration(x) >= threshold )buckets["anonClass"] += {x}; }
         //case x : \interface(name, extends, implements, body)  : 
-		//	 { buckets["interface"] += {x}; }
+		//	 { sizeOfDeclaration(x) >= threshold )buckets["interface"] += {x}; }
         //case x : \field(\type, fragments)  : 
-		//	 { buckets["field"] += {x}; }
+		//	 { sizeOfDeclaration(x) >= threshold )buckets["field"] += {x}; }
         case x : \method(\return, name, parameters, exceptions, impl) : 
-	    	 { buckets["method"] += {x}; }
+	    	 { if(sizeOfDeclaration(x) >= threshold ) buckets["method"] += {x}; }
         //case x : \constructor(name, parameters, exceptions, impl)  : 
-	    //	 { buckets["constructor"] += {x}; }
+	    //	 { sizeOfDeclaration(x) >= threshold )buckets["constructor"] += {x}; }
         //case x : \annotationType(name, body)  : 
-        //     { buckets["annotationType"] += {x}; }
+        //     { sizeOfDeclaration(x) >= threshold )buckets["annotationType"] += {x}; }
         
         
         // case x : \initializer(initializerBody)  : 
-	    //	 { buckets["initializer"] += {x}; }
+	    //	 { sizeOfDeclaration(x) >= threshold )buckets["initializer"] += {x}; }
         //case x : \method(\return, name, parameters, exceptions)  : 
-	    //	 { buckets["emptyMethod"] += {x}; }
+	    //	 { sizeOfDeclaration(x) >= threshold )buckets["emptyMethod"] += {x}; }
         // case x : \import(name)  : 
-   		//	 { buckets["imports"] += {x}; }
+   		//	 { sizeOfDeclaration(x) >= threshold )buckets["imports"] += {x}; }
         //case x : \package(name)  : 
-        //     { buckets["package"] += {x}; }
+        //     { sizeOfDeclaration(x) >= threshold )buckets["package"] += {x}; }
         //case x : \package(parentPackage, name)  : 
-        //     { buckets["parentPackage"] += {x}; }
+        //     { sizeOfDeclaration(x) >= threshold )buckets["parentPackage"] += {x}; }
         // case x : \variables(\type, \fragments) : 
-        //     { buckets["variables"] += {x}; }
+        //     { sizeOfDeclaration(x) >= threshold )buckets["variables"] += {x}; }
         // case x : \typeParameter(name, extendsList)  : 
-        //     { buckets["typeParameter"] += {x}; }
+        //     { sizeOfDeclaration(x) >= threshold )buckets["typeParameter"] += {x}; }
         //case x : \annotationTypeMember(\type, name)  : 
-        //     { buckets["annotationTypeMember"] += {x}; }
+        //     { sizeOfDeclaration(x) >= threshold )buckets["annotationTypeMember"] += {x}; }
         //case x : \annotationTypeMember(\type, name, defaultBlock)  : 
-        //     { buckets["annotationTypeMemberDefault"] += {x}; }
+        //     { sizeOfDeclaration(x) >= threshold )buckets["annotationTypeMemberDefault"] += {x}; }
         //case x : \parameter(\type, name, extraDimensions)  : 
-        //     { buckets["parameter"] += {x}; }
+        //     { sizeOfDeclaration(x) >= threshold )buckets["parameter"] += {x}; }
         //case x : \vararg(\type, name)  : 
-        //     { buckets["vararg"] += {x}; }
+        //     { sizeOfDeclaration(x) >= threshold )buckets["vararg"] += {x}; }
 	}    		
 	
 	return buckets;
 }
 
-map[str, set[Statement]] ripStatements(Statement state)
-{
-	return visit(state){
-	case \assert(Expression expression):{;}
-    case \assert(Expression expression, Expression message):{;}
-    case \block(list[Statement] statements):{;}
-    case \break():{;}
-    case \break(str label):{;}
-    case \continue():{;}
-    case \continue(str label):{;}
-    case \do(Statement body, Expression condition):{;}
-    case \empty():{;}
-    case \foreach(Declaration parameter, Expression collection, Statement body):{;}
-    case \for(list[Expression] initializers, Expression condition, list[Expression] updaters, Statement body):{;}
-    case \for(list[Expression] initializers, list[Expression] updaters, Statement body):{;}
-    case \if(Expression condition, Statement thenBranch):{;}
-    case \if(Expression condition, Statement thenBranch, Statement elseBranch):{;}
-    case \label(str name, Statement body):{;}
-    case \return(Expression expression):{;}
-    case \return():{;}
-    case \switch(Expression expression, list[Statement] statements):{;}
-    case \case(Expression expression):{;}
-    case \defaultCase():{;}
-    case \synchronizedStatement(Expression lock, Statement body):{;}
-    case \throw(Expression expression):{;}
-    case \try(Statement body, list[Statement] catchClauses):{;}
-    case \try(Statement body, list[Statement] catchClauses, Statement \finally):{;}                                        
-    case \catch(Declaration exception, Statement body):{;}
-    case \declarationStatement(Declaration declaration):{;}
-    case \while(Expression condition, Statement body):{;}
-    case \expressionStatement(Expression stmt):{;}
-    case \constructorCall(bool isSuper, Expression expr, list[Expression] arguments):{;}
-    case \constructorCall(bool isSuper, list[Expression] arguments):{;}
-	}
-}
 public int sizeOfDeclaration(Declaration decl)
 {	
 	cnt = 0;
 	visit(decl){
-		case i: \initializer(Statement initializerBody):{println("name : Initializer"); println("source : <i@src>"); cnt += sizeOfTree(initializerBody);}
-		case m: \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl):{println("name : <name>"); println("source: <m@src>"); cnt += sizeOfTree(impl); println("sizeOfTree : <sizeOfTree(impl)>");}	
-		case c: \constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) :{println("name : <name>"); println("source : <c@src>"); cnt += sizeOfTree(impl);  println("sizeOfTree : <sizeOfTree(impl)>");}
+		case i: \initializer(Statement initializerBody):{cnt += sizeOfTree(initializerBody);}
+		case m: \method(_, _, _, _, Statement impl):{cnt += sizeOfTree(impl); }	
+		case c: \constructor(_, _, _, Statement impl) :{cnt += sizeOfTree(impl);}
 	}
 	return cnt;
 }
@@ -266,54 +231,3 @@ public int sizeOfTree(Statement state)
     }
     return cnt;
 }
-
-/*
-list[Expression] ripListExpression(list[Expression] exp)
-{
-}
-
-public Expression ripExpression(Expression exp)
-{
-
-	return visit(exp){
-	case \arrayAccess(Expression array, Expression index) => \arrayAccess(ripExpression(array), ripExpression(index))
-    case \newArray(Type \type, list[Expression] dimensions, Expression init) => \newArray(\type, dimensions, ripExpression(init))
-    case \newArray(Type \type, list[Expression] dimensions) => \newArray(\type, dimensions)
-    case \arrayInitializer(list[Expression] elements) => \arrayInitializer(elements)
-    case \assignment(Expression lhs, str operator, Expression rhs) \assignment(Expression lhs, str operator, Expression rhs)
-    case \cast(Type \type, Expression expression)
-    case \characterLiteral(str charValue)
-    case \newObject(Expression expr, Type \type, list[Expression] args, Declaration class)
-    case \newObject(Expression expr, Type \type, list[Expression] args)
-    case \newObject(Type \type, list[Expression] args, Declaration class)
-    case \newObject(Type \type, list[Expression] args)
-    case \qualifiedName(Expression qualifier, Expression expression)
-    case \conditional(Expression expression, Expression thenBranch, Expression elseBranch)
-    case \fieldAccess(bool isSuper, Expression expression, str name)
-    case \fieldAccess(bool isSuper, str name)
-    case \instanceof(Expression leftSide, Type rightSide)
-    case \methodCall(bool isSuper, str name, list[Expression] arguments)
-    case \methodCall(bool isSuper, Expression receiver, str name, list[Expression] arguments)
-    case \null()
-    case \number(str numberValue)
-    case \booleanLiteral(bool boolValue)
-    case \stringLiteral(str stringValue)
-    case \type(Type \type)
-    case \variable(str name, int extraDimensions)
-    case \variable(str name, int extraDimensions, Expression \initializer)
-    case \bracket(Expression expression)
-    case \this()
-    case \this(Expression thisExpression)
-    case \super()
-    case \declarationExpression(Declaration decl)
-    case \infix(Expression lhs, str operator, Expression rhs)
-    case \postfix(Expression operand, str operator)
-    case \prefix(str operator, Expression operand)
-    case \simpleName(str name)
-    case \markerAnnotation(str typeName)
-    case \normalAnnotation(str typeName, list[Expression] memberValuePairs)
-    case \memberValuePair(str name, Expression \value)             
-    case \singleMemberAnnotation(str typeName, Expression \value)
-	}
-}
-*/
