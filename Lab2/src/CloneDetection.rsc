@@ -96,6 +96,22 @@ public map[Declaration, list[loc]] groupClones(map[str, set[Declaration]] bucket
 	return cloneClasses;
 }
 
+public map[Statement, list[loc]] bucketSortStat(Statement stat, int threshold)
+{
+	map[Statement, list[loc]] buckets = ();
+	
+	visit(stat)
+	{
+		case Statement x: {
+			if(x in buckets)
+				buckets[x] += x@src; 
+				
+			else if(sizeOfTree(x) >= threshold)
+			 		buckets += (x : [x@src]);}
+	}	
+	return buckets;
+}
+
 //change declaration to boom
 public map[str, set[Declaration]] bucketSortDecl(M3 model, int threshold) {
 
@@ -236,3 +252,4 @@ public int sizeOfTree(Statement state)
     }
     return cnt;
 }
+
