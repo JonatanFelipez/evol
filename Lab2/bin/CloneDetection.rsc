@@ -132,53 +132,53 @@ public map[str, set[Declaration]] bucketSortDecl(M3 model, int threshold) {
 	//todo: check if nodemass is big enough 
 		visit(decls){		
 	    //case x : \compilationUnit(imports, types) : 				 
-	    //	{ sizeOfDeclaration(x) >= threshold )buckets["compilationUnit"] += {x}; } 
+	    //	{ if(sizeOfDeclaration(x) >= threshold )buckets["compilationUnit"] += {x}; } 
         //case x : \compilationUnit(package, y, types) : 				 
-	    //	{ sizeOfDeclaration(x) >= threshold )buckets["compilationUnitInPackage"] += {x}; }    
+	    //	{ if(sizeOfDeclaration(x) >= threshold )buckets["compilationUnitInPackage"] += {x}; }    
         //case x : \enum(name, implements, constants, body)  : 		 
-	    //	 { sizeOfDeclaration(x) >= threshold )buckets["enum"] += {x}; }
+	    //	 { if(sizeOfDeclaration(x) >= threshold )buckets["enum"] += {x}; }
         //case x : \enumConstant(name, arguments, class) : 
-	    //	 { sizeOfDeclaration(x) >= threshold )buckets["enumConstant"] += {x}; }
+	    //	 { if(sizeOfDeclaration(x) >= threshold )buckets["enumConstant"] += {x}; }
         //case x : \enumConstant(name, arguments)  : 
-		//	 { sizeOfDeclaration(x) >= threshold )buckets["enumConstantClass"] += {x}; }
+		//	 { if(sizeOfDeclaration(x) >= threshold )buckets["enumConstantClass"] += {x}; }
         //case x : \class(name, extends, implements, body)  : 
-		//	 { sizeOfDeclaration(x) >= threshold )buckets["class"] += {x}; }
+		//	 { if(sizeOfDeclaration(x) >= threshold )buckets["class"] += {x}; }
         //case x : \class(body)  : 
-		//	 { sizeOfDeclaration(x) >= threshold )buckets["anonClass"] += {x}; }
+		//	 { if(sizeOfDeclaration(x) >= threshold )buckets["anonClass"] += {x}; }
         //case x : \interface(name, extends, implements, body)  : 
-		//	 { sizeOfDeclaration(x) >= threshold )buckets["interface"] += {x}; }
+		//	 { if(sizeOfDeclaration(x) >= threshold )buckets["interface"] += {x}; }
         //case x : \field(\type, fragments)  : 
-		//	 { sizeOfDeclaration(x) >= threshold )buckets["field"] += {x}; }
+		//	 { if(sizeOfDeclaration(x) >= threshold )buckets["field"] += {x}; }
         case x : \method(\return, name, parameters, exceptions, impl) : 
 	    	 { if(sizeOfDeclaration(x) >= threshold ) buckets["method"] += {x}; }
         //case x : \constructor(name, parameters, exceptions, impl)  : 
-	    //	 { sizeOfDeclaration(x) >= threshold )buckets["constructor"] += {x}; }
+	    //	 { if(sizeOfDeclaration(x) >= threshold )buckets["constructor"] += {x}; }
         //case x : \annotationType(name, body)  : 
-        //     { sizeOfDeclaration(x) >= threshold )buckets["annotationType"] += {x}; }
+        //     { if(sizeOfDeclaration(x) >= threshold )buckets["annotationType"] += {x}; }
         
         
         // case x : \initializer(initializerBody)  : 
-	    //	 { sizeOfDeclaration(x) >= threshold )buckets["initializer"] += {x}; }
+	    //	 { if(sizeOfDeclaration(x) >= threshold )buckets["initializer"] += {x}; }
         //case x : \method(\return, name, parameters, exceptions)  : 
-	    //	 { sizeOfDeclaration(x) >= threshold )buckets["emptyMethod"] += {x}; }
+	    //	 { if(sizeOfDeclaration(x) >= threshold )buckets["emptyMethod"] += {x}; }
         // case x : \import(name)  : 
-   		//	 { sizeOfDeclaration(x) >= threshold )buckets["imports"] += {x}; }
+   		//	 { if(sizeOfDeclaration(x) >= threshold )buckets["imports"] += {x}; }
         //case x : \package(name)  : 
-        //     { sizeOfDeclaration(x) >= threshold )buckets["package"] += {x}; }
+        //     { if(sizeOfDeclaration(x) >= threshold )buckets["package"] += {x}; }
         //case x : \package(parentPackage, name)  : 
-        //     { sizeOfDeclaration(x) >= threshold )buckets["parentPackage"] += {x}; }
+        //     { if(sizeOfDeclaration(x) >= threshold )buckets["parentPackage"] += {x}; }
         // case x : \variables(\type, \fragments) : 
-        //     { sizeOfDeclaration(x) >= threshold )buckets["variables"] += {x}; }
+        //     { if(sizeOfDeclaration(x) >= threshold )buckets["variables"] += {x}; }
         // case x : \typeParameter(name, extendsList)  : 
-        //     { sizeOfDeclaration(x) >= threshold )buckets["typeParameter"] += {x}; }
+        //     { if(sizeOfDeclaration(x) >= threshold )buckets["typeParameter"] += {x}; }
         //case x : \annotationTypeMember(\type, name)  : 
-        //     { sizeOfDeclaration(x) >= threshold )buckets["annotationTypeMember"] += {x}; }
+        //     { if(sizeOfDeclaration(x) >= threshold )buckets["annotationTypeMember"] += {x}; }
         //case x : \annotationTypeMember(\type, name, defaultBlock)  : 
-        //     { sizeOfDeclaration(x) >= threshold )buckets["annotationTypeMemberDefault"] += {x}; }
+        //     { if(sizeOfDeclaration(x) >= threshold )buckets["annotationTypeMemberDefault"] += {x}; }
         //case x : \parameter(\type, name, extraDimensions)  : 
-        //     { sizeOfDeclaration(x) >= threshold )buckets["parameter"] += {x}; }
+        //     { if(sizeOfDeclaration(x) >= threshold )buckets["parameter"] += {x}; }
         //case x : \vararg(\type, name)  : 
-        //     { sizeOfDeclaration(x) >= threshold )buckets["vararg"] += {x}; }
+        //     { if(sizeOfDeclaration(x) >= threshold )buckets["vararg"] += {x}; }
 	}    		
 	
 	return buckets;
