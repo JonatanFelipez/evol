@@ -12,12 +12,13 @@ import lang::java::jdt::m3::AST;
 int threshold = 6;
 //set[Declaration]
 
+
 public void getAST()
 {
  	M3 model = createM3FromEclipseProject(|project://testproject|);
 	decls = createAstsFromEclipseProject(model.id, false);
 	
-	/* This also creates a stackoverflow but does work on smaller programs. Unfortanatlly createAstsFromEclipseProject does the same thing. It could be used to split the project.
+	/* This also creates a stackoverflow but does work on smaller programs. Unfortunately createAstsFromEclipseProject does the same thing. It could be used to split the project.
 	
 	set[Declaration] decls = {};
 		for(file <-files(model))
@@ -34,6 +35,31 @@ public void getAST()
 	
 	println("m3 files size is: <size(files(model))>");	
 	println("ast size is: <size(decls)>");
+}
+
+//input: a list of statements, output a list of statement sequences that 
+public list[list[Statement]] getStatementSequences(list[Statement] stmts, int threshold)
+{
+	if(size(stmts) == 0) return [];
+	
+	list[list[Statement]] sequences;
+	
+	for(int begin <- [0..size(stmts)])
+	{
+		int end = begin;
+		int mass = 0;
+		list[Statement] sequence = [];
+		
+		while(mass < threshold && end < size(stmts))
+		{
+			sequence += stmts[end];
+			mass += sizeOftree([end]);
+			end += 1;
+		}	
+		if(mass >= threshold)
+			sequences += sequence;
+	}
+	return sequences;	
 }
 
 public void testCloneDetection()
