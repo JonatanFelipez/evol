@@ -103,9 +103,10 @@ public map[Statement, list[loc]] bucketSortStat(Statement stat, int threshold)
 	visit(stat)
 	{
 		case Statement x: {
-			if(x in buckets)
-				buckets[x] += x@src; 
-				
+			if(x in buckets){					
+					buckets[x] += [x@src];
+					println("x = <x@src> amd buckets[x] = <buckets[x]>");  
+				}
 			else if(sizeOfTree(x) >= threshold)
 			 		buckets += (x : [x@src]);}
 	}	
