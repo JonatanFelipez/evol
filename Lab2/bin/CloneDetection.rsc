@@ -12,12 +12,13 @@ import lang::java::jdt::m3::AST;
 int threshold = 6;
 //set[Declaration]
 
+
 public void getAST()
 {
  	M3 model = createM3FromEclipseProject(|project://testproject|);
 	decls = createAstsFromEclipseProject(model.id, false);
 	
-	/* This also creates a stackoverflow but does work on smaller programs. Unfortanatlly createAstsFromEclipseProject does the same thing. It could be used to split the project.
+	/* This also creates a stackoverflow but does work on smaller programs. Unfortunately createAstsFromEclipseProject does the same thing. It could be used to split the project.
 	
 	set[Declaration] decls = {};
 		for(file <-files(model))
@@ -34,6 +35,31 @@ public void getAST()
 	
 	println("m3 files size is: <size(files(model))>");	
 	println("ast size is: <size(decls)>");
+}
+
+//input: a list of statements, output a list of statement sequences that 
+public list[list[Statement]] getStatementSequences(list[Statement] stmts, int threshold)
+{
+	if(size(stmts) == 0) return [];
+	
+	list[list[Statement]] sequences = [];
+	
+	for(int begin <- [0..size(stmts)])
+	{
+		int end = begin;
+		int mass = 0;
+		list[Statement] sequence = [];
+		
+		while(mass < threshold && end < size(stmts))
+		{
+			sequence += stmts[end];
+			mass += sizeOfTree(stmts[end]);
+			end += 1;
+		}	
+		if(mass >= threshold)
+			sequences += [sequence];
+	}
+	return sequences;	
 }
 
 public void testCloneDetection()
@@ -216,6 +242,7 @@ public int sizeOfDeclaration(Declaration decl)
 	}
 	return cnt;
 }
+
 public int sizeOfTree(Statement state)
 {	
 	int cnt = 0;
@@ -254,3 +281,41 @@ public int sizeOfTree(Statement state)
     return cnt;
 }
 
+public list[Statement] ripStatement(Statement state)
+{	
+	list[Statement] sequence = [];
+	
+	visit(state){
+		case x : \assert(_):{sequence += x;}
+		case x : \assert(_, _):{sequence += x;}
+		case x : \block(_):{sequence += x;}
+		case x : \break():{sequence += x;}
+		case x : \break(_):{sequence += x;}
+		case x : \continue():{sequence += x;}
+		case x : \continue(_):{sequence += x;}
+		case x : \do(_, _):{sequence += x;}
+		case x : \empty():{sequence += x;}
+		case x : \foreach(_, _, _):{sequence += x;}
+		case x : \for(_, _, _, _):{csequence += x;}
+		case x : \for(_, _, _):{sequence += x;}
+		case x : \if(_, _):{sequence += x;}
+		case x : \if(_, _, _):{sequence += x;}
+		case x : \label(_, _):{sequence += x;}
+		case x : \return(_):{sequence += x;}
+		case x : \return():{sequence += x;}
+		case x : \switch(_, _):{sequence += x;}
+		case x : \case(_):{sequence += x;}
+		case x : \defaultCase():{sequence += x;}
+		case x : \synchronizedStatement(_, _):{sequence += x;}
+		case x : \throw(_):{sequence += x;}
+		case x : \try(_, _):{sequence += x;}
+		case x : \try(_, _, _):{sequence += x;}                                        
+		case x : \catch(_, _):{sequence += x;}
+		case x : \declarationStatement(_):{sequence += x;}
+		case x : \while(_, _):{sequence += x;}
+		case x : \expressionStatement(_):{sequence += x;}
+		case x : \constructorCall(_,_,_):{sequence += x;}
+		case x : \constructorCall(_, _):{sequence += x;}
+    }
+    return sequence;    
+}

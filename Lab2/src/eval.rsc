@@ -59,6 +59,17 @@ test bool test_bucketSortStat(set[Declaration] AST, int threshold)
 	return true;
 }
 
+public list[list[Statement]] test_getStatementSequences(set[Declaration] AST, int threshold)
+{
+	println("checking the getStatementSequences....");
+	
+	visit(AST)
+	{
+		case x: \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl):{return getStatementSequences(ripStatement(impl), threshold);}
+	}
+	
+}
+
 public Statement visitingDeclarations(set[Declaration] AST)
 {
 	visit(AST){
