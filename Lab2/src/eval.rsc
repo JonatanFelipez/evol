@@ -59,13 +59,24 @@ test bool test_bucketSortStat(set[Declaration] AST, int threshold)
 	return true;
 }
 
-public list[list[Statement]] test_getStatementSequences(set[Declaration] AST, int threshold)
+public list[list[list[Statement]]] test_getStatementSequences(str methodName1,  set[Declaration] AST, int threshold)
 {
 	println("checking the getStatementSequences....");
 	
 	visit(AST)
 	{
-		case x: \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl):{return getStatementSequences(ripStatement(impl), threshold);}
+		case x: \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl):{if(methodName == name) return ripStatement(impl, threshold);}
+	}
+	
+}
+
+public void test_bucketSortSequence(str methodName, set[Declaration] AST, int threshold)
+{
+	println("checking the bucketSortSequence....");
+	
+	visit(AST)
+	{
+		case x: \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl):{if(methodName == name) bucketSortSequence(impl, threshold);}
 	}
 	
 }

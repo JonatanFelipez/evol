@@ -1,6 +1,7 @@
 module CloneDetection
 
 import Prelude;
+import Map;
 import String;
 
 //Java Parsing libraries
@@ -12,6 +13,9 @@ import lang::java::jdt::m3::AST;
 int threshold = 6;
 //set[Declaration]
 
+//aliases
+alias Sequences = list[Sequence];
+alias Sequence = list[Statement];
 
 public void getAST()
 {
@@ -50,14 +54,15 @@ public list[list[Statement]] getStatementSequences(list[Statement] stmts, int th
 		int mass = 0;
 		list[Statement] sequence = [];
 		
-		while(mass < threshold && end < size(stmts))
+		while(end < size(stmts))
 		{
 			sequence += stmts[end];
 			mass += sizeOfTree(stmts[end]);
 			end += 1;
-		}	
-		if(mass >= threshold)
-			sequences += [sequence];
+			
+			if(mass >= threshold)
+				sequences += [sequence];
+		}		
 	}
 	return sequences;	
 }
@@ -120,6 +125,30 @@ public map[Declaration, list[loc]] groupClones(map[str, set[Declaration]] bucket
 	}	
 	
 	return cloneClasses;
+}
+
+public map[Sequence, list[loc]] bucketSortSequence(Statement state, int threshold)
+{
+	list[Sequences] sequences = ripStatement(state, threshold);
+	map[Sequence, list[loc]] buckets = ();	
+	
+	for(seqs <- sequences)
+	{		
+		for(seq <- seqs)
+		{	
+			if(seq in buckets){
+				//allready in the bucket
+				buckets[seq] += [addLocs(seq[0]@src, seq[size(seq)-1]@src)];
+			}else{								
+				buckets += (seq : [addLocs(seq[0]@src, seq[size(seq)-1]@src)]);
+			}										
+		}
+	}
+	for(seq <- buckets)
+	{
+		
+	}
+	return buckets;
 }
 
 public map[Statement, list[loc]] bucketSortStat(Statement stat, int threshold)
@@ -281,41 +310,24 @@ public int sizeOfTree(Statement state)
     return cnt;
 }
 
-public list[Statement] ripStatement(Statement state)
+//Using relation instead of list
+public list[list[list[Statement]]] ripStatement(Statement state, int threshold)
 {	
-	list[Statement] sequence = [];
+	list[list[list[Statement]]] sequences = [];
 	
 	visit(state){
-		case x : \assert(_):{sequence += x;}
-		case x : \assert(_, _):{sequence += x;}
-		case x : \block(_):{sequence += x;}
-		case x : \break():{sequence += x;}
-		case x : \break(_):{sequence += x;}
-		case x : \continue():{sequence += x;}
-		case x : \continue(_):{sequence += x;}
-		case x : \do(_, _):{sequence += x;}
-		case x : \empty():{sequence += x;}
-		case x : \foreach(_, _, _):{sequence += x;}
-		case x : \for(_, _, _, _):{csequence += x;}
-		case x : \for(_, _, _):{sequence += x;}
-		case x : \if(_, _):{sequence += x;}
-		case x : \if(_, _, _):{sequence += x;}
-		case x : \label(_, _):{sequence += x;}
-		case x : \return(_):{sequence += x;}
-		case x : \return():{sequence += x;}
-		case x : \switch(_, _):{sequence += x;}
-		case x : \case(_):{sequence += x;}
-		case x : \defaultCase():{sequence += x;}
-		case x : \synchronizedStatement(_, _):{sequence += x;}
-		case x : \throw(_):{sequence += x;}
-		case x : \try(_, _):{sequence += x;}
-		case x : \try(_, _, _):{sequence += x;}                                        
-		case x : \catch(_, _):{sequence += x;}
-		case x : \declarationStatement(_):{sequence += x;}
-		case x : \while(_, _):{sequence += x;}
-		case x : \expressionStatement(_):{sequence += x;}
-		case x : \constructorCall(_,_,_):{sequence += x;}
-		case x : \constructorCall(_, _):{sequence += x;}
+		case x : \block(list[Statement] statements):{sequences += [getStatementSequences(statements, threshold)];} //need this		
     }
-    return sequence;    
+    return sequences;    
+}
+
+loc addLocs(loc s, loc r) {
+    res = s;
+    res.end = r.end;
+    adjust = 0;
+    if (s.offset + s.length < r.offset) {
+        adjust = r.offset - (s.offset+s.length);
+    }
+    res.length = s.length + r.length + adjust;
+    return res;
 }
