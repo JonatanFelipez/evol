@@ -115,7 +115,7 @@ public map[Declaration, list[loc]] groupClones(map[str, set[Declaration]] bucket
 			{
 				/////////////////////////////// Test
 				locs = cloneClasses[x];
-				if(!(x@src in locs))
+				if(x@src notin locs)
 					cloneClasses[x] += ( x@src ); 
 				///////////////////////////////
 			}
@@ -125,6 +125,162 @@ public map[Declaration, list[loc]] groupClones(map[str, set[Declaration]] bucket
 	}	
 	
 	return cloneClasses;
+}
+
+public map[loc, list[loc]] getClones(set[Declaration] AST, int threshold)
+{
+	map[Declaration, list[loc]] decClones = getBucketsDec(AST, threshold);
+	map[Sequence, list[loc]] seqClones = getBucketsSeq(AST, threshold);
+	map[loc, list[loc]] par2Child = ();
+	map[loc, list[loc]] cloneClasses = ();
+	
+	list[loc] seqs = [];
+	
+	for(parClones <- seqClones)
+		for(loc par <- seqClones[parClones])
+			seqs += [par];	
+	
+	for(seq <- seqs){				
+		//par2Child += (par : childs | <par, childs> <- findChildren(seq, seqs));
+		x = findChildren(seq, seqs);
+		par2Child += (x[0] : x[1]);
+	}
+	
+	return par2Child;
+		
+	for(par <- par2Child){
+		for(childs <- par2Child[par])
+		{
+			for(child <- childs)
+			{
+				for(seqs <- seqClones)
+				{
+					for(seq <- seqClones[seqs])
+					{
+						for(seqLoc <- seq)
+						{
+							if(child == seqLoc)
+							{
+								if()
+
+							}
+						}
+					}
+				}
+			}
+		}
+		
+	}
+	//build up par2Child
+	// par2Child = (par : childs | <par,childs> <- findChildren(parent, children);
+	//par2Child = (par : childs | <par, childs> <- findChildren(parent, children));	
+	
+	//Now the difficult part:
+	// - for all sequence clones:
+	// 		filter sequence clone x 
+	//			if x has a parent 
+	//			AND all clones of x have a parent that is a clone of the parent of x
+	//	
+	// After this is done, you have all the clone classes. 
+	// Convert this to JSON so that it can be used as input for visualization: www.highcharts.com
+	
+	// eerst alles met een parent vinden.
+	// dan kijken of die een klonen heeft.
+	//zo ja kijken of al die klonen in een kloon van de parent zitten.
+}
+
+public tuple[loc, list[loc]] findChildren(loc parent, list[loc] childeren)
+{
+	//Todo: for each parent check for each children: not equal and contained within: in same file and between beginLine and endLine
+	// if contained within then add to par2Child[parent] += contained child loc
+	
+	//if(check uri van parent and loc) if not equal do nothing.
+	//if equal, check if position of child is contained within parent
+	list[loc] locPar2Child = [];
+	tuple[loc, list[loc]] filPar2Child = <parent, []>; 
+	for(child <- childeren)
+	{
+		if(parent != child && parent.uri == child.uri)
+		{
+			if(child.begin.line >= parent.begin.line && child.end.line <= parent.end.line)
+			{
+				locPar2Child += [child];
+			}
+		}
+	}
+	return <parent, locPar2Child>;
+}
+
+public map[Declaration, list[loc]] getBucketsDec(set[Declaration] AST, int threshold)
+{
+	//TODO: locations > 1 (alleen de clones niet de unique)
+	map[Declaration, list[loc]] dec2Loc = ();
+	visit(AST){
+		case Declaration x: {
+				newDec2Loc = groupClones(bucketSortDecl(x, threshold));
+				for(dec <- newDec2Loc)
+				{
+					if(dec in dec2Loc)
+					{
+						for(newLocation <- newDec2Loc[dec])
+						{
+							if(newLocation notin dec2Loc[dec])
+							{
+								dec2Loc[dec] += [newLocation];
+							}
+						}						
+					}else{
+						dec2Loc += (dec : newDec2Loc[dec]);
+					}
+				}
+			}
+	}		
+	return dec2Loc;
+} 
+
+public map[Sequence, list[loc]] getBucketsSeq(set[Declaration] AST, int threshold)
+{
+	//TODO: locations > 1 (alleen de clones niet de unique)
+	map[Sequence, list[loc]] seq2Loc = ();
+	visit(AST){
+		case i: \initializer(Statement initializerBody):{
+			newSeq2Loc = bucketSortSequence(initializerBody, threshold);
+			
+			for(seqs <- newSeq2Loc)
+			{				
+				if(seqs in seq2Loc){
+					seq2Loc[seqs] += newSeq2Loc[seqs];
+				}else{
+					seq2Loc += (seqs : newSeq2Loc[seqs]);
+				}								
+			}					
+		}
+		case m: \method(_, _, _, _, Statement impl):{
+			newSeq2Loc = bucketSortSequence(impl, threshold);
+			
+			for(seqs <- newSeq2Loc)
+			{				
+				if(seqs in seq2Loc){
+					seq2Loc[seqs] += newSeq2Loc[seqs];
+				}else{
+					seq2Loc += (seqs : newSeq2Loc[seqs]);
+				}								
+			}			
+		}	
+		case c: \constructor(_, _, _, Statement impl) :{
+			newSeq2Loc = bucketSortSequence(impl, threshold);
+			
+			for(seqs <- newSeq2Loc)
+			{				
+				if(seqs in seq2Loc){
+					seq2Loc[seqs] += newSeq2Loc[seqs];
+				}else{
+					seq2Loc += (seqs : newSeq2Loc[seqs]);
+				}								
+			}			
+		}
+	}
+	return seq2Loc;
 }
 
 public map[Sequence, list[loc]] bucketSortSequence(Statement state, int threshold)
@@ -139,14 +295,11 @@ public map[Sequence, list[loc]] bucketSortSequence(Statement state, int threshol
 			if(seq in buckets){
 				//allready in the bucket
 				buckets[seq] += [addLocs(seq[0]@src, seq[size(seq)-1]@src)];
-			}else{								
+			}else{		
+				//not in the bucket						
 				buckets += (seq : [addLocs(seq[0]@src, seq[size(seq)-1]@src)]);
 			}										
 		}
-	}
-	for(seq <- buckets)
-	{
-		
 	}
 	return buckets;
 }
@@ -169,12 +322,9 @@ public map[Statement, list[loc]] bucketSortStat(Statement stat, int threshold)
 }
 
 //change declaration to boom
-public map[str, set[Declaration]] bucketSortDecl(M3 model, int threshold) {
-
-	set[Declaration] decls = createAstsFromEclipseProject(model.id, false);
-	println("AST made, bucket sorting decls...");
-
-	set[Declaration] emptyBucket = {};
+public map[str, set[Declaration]] bucketSortDecl(Declaration dec, int threshold) {
+	
+	println("AST made, bucket sorting decls...");	
 	
 	//buckets
 	map[str, set[Declaration]] buckets = (
@@ -191,22 +341,10 @@ public map[str, set[Declaration]] bucketSortDecl(M3 model, int threshold) {
 		"method" : {},
 		"constructor" : {},
 		"annotationType" : {}
-		
-		//these do not contain enough mass to be bigger than the threshold.
-		//"emptyMethod" : {},
-		//"imports" : {},
-		//"package" : {},
-		//"parentPackage" : {},
-		//"variables" : {},			//special, locations per variable, multiple variable on one line: int a,b,c,d;
-		//"typeParameter" : {},
-		//"annotationTypeMember" : {},
-		//"annotationTypeMemberDefault" : {},
-		//"parameter" : {},
-		//"vararg" : {}
 	);
 		
 	//hash all subtrees to buckets
-	visit(decls){		
+	visit(dec){		
 	    case x : \compilationUnit(imports, types) : 				 
 	    	{ if(sizeOfDeclaration(x) >= threshold) buckets["compilationUnit"] += {x}; } 
         case x : \compilationUnit(package, y, types) : 				 
@@ -233,28 +371,6 @@ public map[str, set[Declaration]] bucketSortDecl(M3 model, int threshold) {
             { if(sizeOfDeclaration(x) >= threshold )buckets["annotationType"] += {x}; }        
          case x : \initializer(initializerBody)  : 
 	    	 { if(sizeOfDeclaration(x) >= threshold )buckets["initializer"] += {x}; }
-        
-        
-        //case x : \method(\return, name, parameters, exceptions)  : 
-	    //	 { if(sizeOfDeclaration(x) >= threshold )buckets["emptyMethod"] += {x}; }
-        // case x : \import(name)  : 
-   		//	 { if(sizeOfDeclaration(x) >= threshold )buckets["imports"] += {x}; }
-        //case x : \package(name)  : 
-        //   { if(sizeOfDeclaration(x) >= threshold )buckets["package"] += {x}; }
-        //case x : \package(parentPackage, name)  : 
-        //   { if(sizeOfDeclaration(x) >= threshold )buckets["parentPackage"] += {x}; }
-        // case x : \variables(\type, \fragments) : 
-        //   { if(sizeOfDeclaration(x) >= threshold )buckets["variables"] += {x}; }
-        // case x : \typeParameter(name, extendsList)  : 
-        //   { if(sizeOfDeclaration(x) >= threshold )buckets["typeParameter"] += {x}; }
-        //case x : \annotationTypeMember(\type, name)  : 
-        //   { if(sizeOfDeclaration(x) >= threshold )buckets["annotationTypeMember"] += {x}; }
-        //case x : \annotationTypeMember(\type, name, defaultBlock)  : 
-        //   { if(sizeOfDeclaration(x) >= threshold )buckets["annotationTypeMemberDefault"] += {x}; }
-        //case x : \parameter(\type, name, extraDimensions)  : 
-        //   { if(sizeOfDeclaration(x) >= threshold )buckets["parameter"] += {x}; }
-        //case x : \vararg(\type, name)  : 
-        //   { if(sizeOfDeclaration(x) >= threshold )buckets["vararg"] += {x}; }
 	}    		
 	
 	return buckets;
