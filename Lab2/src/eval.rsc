@@ -240,38 +240,3 @@ public int visitingExpressions(Expression exp)
     }
     return 1;
 }
-
-public void testCloneDetection()
-{
-	M3 model = createM3FromEclipseProject(|project://hsqldb|);
-	//M3 model = createM3FromEclipseProject(|project://smallsql|);
-	println("computed M3, starting cloneDetection Method");
-	map[str, set[Declaration]] result = bucketSortDecl(model, threshold);	
-	
-	//Debug, shor results
-	map[Declaration, list[loc]] groups = groupClones(result);
-	iprint(groups);
-	
-	/*
-	for(x <- result)
-	{
-		int i = 0;
-		println("Tree type: <x>");
-		for(y <- result[x])
-		{
-			if(i < 10)
-			{
-				try{
-					println("location <i>: <y@src>");
-					i += 1;	
-				}
-				catch NoSuchAnnotation(l) : {
-						;
-				}
-			}
-			else 
-			  break;
-		 }
-	}	*/
-}
-

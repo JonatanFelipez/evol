@@ -12,11 +12,6 @@ import lang::java::jdt::m3::Core;
 import lang::java::m3::AST;
 import lang::java::jdt::m3::AST;
 
-<<<<<<< HEAD
-public void exportToJsonFile(value x)
-{
-	printToFile(|project://Lab2/cloneClasses.js|,toJSON(x));
-=======
 alias Sequence2 = list[Statement];
 
 public void exportToJsonFile(map[Sequence2, list[int]] cloneClasses)
@@ -27,7 +22,6 @@ public void exportToJsonFile(map[Sequence2, list[int]] cloneClasses)
 	writeFile(cloneFile, "var cloneClasses = [");
 	for(sequence <- cloneClasses)
 	{
-		//values += ( i : cloneClasses[sequence]);
 		if(i < size(cloneClasses))
 			appendToFile(cloneFile, "{<i> : [<cloneClasses[sequence][0]>,<cloneClasses[sequence][1]>]},");
 		else
@@ -36,7 +30,6 @@ public void exportToJsonFile(map[Sequence2, list[int]] cloneClasses)
 		i += 1;
 	}
 	appendToFile(cloneFile, "];");
->>>>>>> e8648b3dd412e8045b38813e4d96ebbbb5baa50e
 }
 
 public void exportClonesToFile(map[Sequence2, list[loc]] cloneClasses)
