@@ -23,16 +23,43 @@ public class Testcase
 	 * @param  variable Description text text text.          (3)
 	 * @return Description text text text.
 	 */
-	public void main()
+	public void main1()
 	{
-		if(b > c && a < c) {
-			dosomethingElse();
-		}
+		int a = 1;
+		int b = 2;
+		int c = 3;
+		int d = 4;
 		
-		//println(a);
+		int a = 1;
+		int b = 2;
+		int c = 3;
+		int d = 4;		
 	}
 	
+	public void main2()
+	{
+		int a = 1;
+		int b = 2;
+		int c = 3;
+		int d = 4;
+		
+		int e = 1;
+		int f = 2;
+		int g = 3;
+		int h = 4;		
+	}
 	/**TODO: this is a comment*/
 	public void dosomethingElse()
 	{}
+	
+	public int fa (int x)
+	{
+		if(x < 4)
+		
+			return x;
+		else
+		{
+			return x;
+		}
+	}
 }

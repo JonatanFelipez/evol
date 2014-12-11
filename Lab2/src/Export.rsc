@@ -22,7 +22,6 @@ public void exportToJsonFile(map[Sequence2, list[int]] cloneClasses)
 	writeFile(cloneFile, "var cloneClasses = [");
 	for(sequence <- cloneClasses)
 	{
-		//values += ( i : cloneClasses[sequence]);
 		if(i < size(cloneClasses))
 			appendToFile(cloneFile, "{<i> : [<cloneClasses[sequence][0]>,<cloneClasses[sequence][1]>]},");
 		else

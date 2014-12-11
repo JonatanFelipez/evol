@@ -12,7 +12,6 @@ import lang::java::jdt::m3::AST;
 
 import Export;
 
-int threshold = 6;
 //set[Declaration]
 
 //aliases

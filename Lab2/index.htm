@@ -1,0 +1,190 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Clone Visualization</title>
+
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<script type="text/javascript" src="cloneClasses.js"></script>
+        <style type="text/css">${demo.css}</style>
+        <style type="text/css">
+            h1 {
+               font-family : "Verdana", Verdana; 
+               font-weight : 1.5;
+               border-bottom: solid #000000 3px;
+            }          
+            h2 {
+                margin-left: 5px;
+                font-family : "Verdana", Verdana; 
+                font-weight : 1.5;
+            }
+            h3 {
+                margin-left: 10px;
+                font-family : "Verdana", Verdana; 
+                font-weight : 1.5;
+            }
+            .border {
+                margin: 5px auto;
+                padding-left: 10px;
+                padding-right: 10px;
+                border : dotted #000000 2px;
+                display: none;
+            }
+            
+        </style>
+		<script type="text/javascript">
+            
+            console.log(cloneClasses);
+            
+            var keys = [];
+            var cloneMass = [];
+            var numberOfClones = [];
+            
+            var uniquePercentage = 10;
+            var numOfClones = 0;
+            
+            var biggestCloneName = "None";
+            var biggestClone = 0;
+            
+            var biggestClassName= "None";
+            var biggestClass = 0;
+            
+            for(k in cloneClasses)
+            {
+                var name = "Clone Class " + (k);
+                keys.push(name);
+                
+                for(r in cloneClasses[k])
+                {
+                    cm = cloneClasses[k][r][0];
+                    noc = cloneClasses[k][r][1];
+                    //bar charts
+                    cloneMass.push(cm);
+                    numberOfClones.push(noc);
+                    
+                    //Total number of clones
+                    numOfClones += noc;
+                    
+                    //Biggest clone class (number of clones)
+                    if(biggestClass < noc)
+                    {
+                        biggestClass = name;
+                        numOfClonesBiggestClass = noc;
+                    }
+                    
+                    //Biggest clone (number of lines)
+                    if(biggestClone < (cloneClasses[k][r][0]))
+                    {
+                        ;
+                    }
+                    
+                }
+                
+            }
+            
+            $(function () {
+
+                $('#barChart').highcharts({
+                    chart: {
+                        type: 'bar'
+                    },
+                    title: {
+                        text: 'Clone classes Mass'
+                    },
+                    subtitle: {
+                        text: 'The weight of a class multiplied by its members'
+                    },
+                    xAxis: {
+                        categories: keys, // ['Clone class 1', 'Clone class 2', 'Clone class 3', 'Clone class 4', 'Clone class 5'],
+                        title: {
+                            text: null
+                        }
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: '',
+                            align: 'high'
+                        },
+                        labels: {
+                            overflow: 'justify'
+                        }
+                    },
+                    plotOptions: {
+                        bar: {
+                            dataLabels: {
+                                enabled: true
+                            }
+                        }
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'top',
+                        x: -40,
+                        y: 100,
+                        floating: true,
+                        borderWidth: 1,
+                        backgroundColor: ((Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'),
+                        shadow: true
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series: [{
+                        name: 'Mass',
+                        data: cloneMass //[107, 31, 635, 203, 2] //class mass 
+                    }, {
+                        name: 'Number of clones',
+                        data: numberOfClones //[973, 914, 4054, 732, 34] //classes number of clones in class
+                    }]
+                });
+                
+                $('#pieChart').highcharts({
+                    chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false
+                    },
+                    title: {
+                        text: 'Percentage of duplicated code'
+                    },
+                    tooltip: {
+                        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: false
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        type: 'pie',
+                        name: 'Browser share',
+                        data: [
+                            ['Duplicated', dupPercentage],
+                            ['Unique', 100 - dupPercentage],
+                        ]
+                    }]
+                });   
+            });
+		</script>
+	</head>
+	<body>
+        <script src="js/highcharts.js"></script>
+        <script src="js/modules/exporting.js"></script>
+        <h1>Visualization</h1>
+        <div class="border">
+            <h2>Number of clones: [Number of clones]</h2>
+            <h2>Biggest Clone (Lines of code): </h2>
+            <h2>Biggest Clone class (number of clones):</h2>
+            <h3>Example clones can be found in the rascal console after running the clone detection software</div>
+        </div>
+        <div id="barChart" style="min-width: 310px; max-width: 800px; height: 2000px; margin: 0 auto"></div>
+        <div id="pieChart" style="min-width: 310px; max-width: 800px; height: 400px; margin: 0 auto"></div>
+	</body>
+</html>
