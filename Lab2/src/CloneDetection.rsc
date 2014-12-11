@@ -74,6 +74,46 @@ public map[Declaration, list[loc]] groupClones(map[str, set[Declaration]] bucket
 public void run(int threshold)
 { run(|project://smallsql|, threshold); }
 
+public void run(int threshold, bool Exports)
+{ 
+	if(exports){
+		run(threshold);
+	}else{
+		println("Creating M3 model...");
+		model = createM3FromEclipseProject(proj);
+		println("Creating ASTs from model...");
+		asts = createAstsFromEclipseProject(model.id, false);
+		println("Gathering clone data...");
+		x = getClones(asts, threshold);
+	}
+}
+
+public void run(M3 model, int threshold, bool Exports)
+{
+	println("Creating ASTs from model...");
+	asts = createAstsFromEclipseProject(model.id, false);
+	println("Gathering clone data...");
+	x = getClones(asts, threshold);	
+	if(Exports){
+		println("Exporting to Json file...");
+		exportToJsonFile(getResults(x));
+		println("exporting to file");
+		exportClonesToFile(x);
+	}
+}
+
+public void run(set[Declaration] AST, int threshold, bool Exports)
+{
+	println("Gathering clone data...");
+	x = getClones(asts, threshold);	
+	if(Exports){
+		println("Exporting to Json file...");
+		exportToJsonFile(getResults(x));
+		println("exporting to file");
+		exportClonesToFile(x);
+	}
+}
+
 public void run(loc proj, int threshold)
 {
 	println("Creating M3 model...");
@@ -83,13 +123,26 @@ public void run(loc proj, int threshold)
 	println("Gathering clone data...");
 	x = getClones(asts, threshold);
 	println("Exporting to Json file...");
-	exportToJsonFile(getClones(asts, threshold));
+	exportToJsonFile(getResults(x));
+	println("exporting to file");
+	exportClonesToFile(x);
+}
+
+public map[Sequence, list[int]] getResults(map[Sequence, list[loc]] clonesClasses)
+{
+	map[Sequence, list[int]] values = ();	
+	for(clonesclass <- clonesClasses)
+	{
+		values += (clonesclass: [calcMass(clonesclass, clonesClasses[clonesclass]), size(clonesClasses[clonesclass])]);
+	}
+	return values;
 }
 
 //public map[Sequence, list[loc]]
 public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 {
-	map[Declaration, list[loc]] decClones = getBucketsDec(AST, threshold);
+	//map[Declaration, list[loc]] decClones = getBucketsDec(AST, threshold);
+	println("looking for clones");
 	map[Sequence, list[loc]] seqClones = getBucketsSeq(AST, threshold);
 	
 	//Initialize parent -> child clone mapping
@@ -99,6 +152,7 @@ public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 	map[loc, list[loc]] cloneClasses = ();
 	
 	//Initialize cloneClasses
+	println("looking for parents and children");
 	list[loc] seqLocs = [par | parClones <- seqClones, par <- seqClones[parClones]];
 	
 	for(seq <- seqLocs){				
@@ -116,6 +170,7 @@ public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 	filteredSeqClones = ( loc2Seq[clone] : seqClones[loc2Seq[clone]] | clone <- seqLocs, clone notin child2Par );
 	
 	//Detect and remove clone subclassess
+	println("detect and remove clone subclasses");
 	for(child <- child2Par)
 	{		
 		sequence = loc2Seq[child];
@@ -446,3 +501,31 @@ loc addLocs(loc s, loc r) {
     res.length = s.length + r.length + adjust;
     return res;
 }
+
+public int calcMass(Sequence sequence, list[loc] locations)
+{
+	return sequenceMass = sequenceSize(sequence) * size(locations);	 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
