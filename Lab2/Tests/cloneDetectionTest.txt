@@ -1,0 +1,2 @@
+("numClasses":0,"dupLoc":0,"%dupLoc":0,"biggestClass":0,"biggestClone":0,"totalLoc":0,"numClones":0)
+(|project://Lab2/Tests/cloneDetectionTest.txt|:("numClasses":0,"dupLoc":0,"%dupLoc":0,"biggestClass":0,"biggestClone":0,"totalLoc":0,"numClones":0))

@@ -14,14 +14,25 @@ import lang::java::jdt::m3::AST;
 
 @memo
 //value getMyExampleData(int input)
-alias testSetup = map[set[Declaration] AST, measurements measurement];
-alias measurements = map[str name, value _value];
+alias testSetup = map[loc, measurements];
+alias measurements = map[str, int];
 
-public bool allAutoTest(set[Declaration] AST)
-{
-	try	{
+
+
+public bool allAutoTest()
+{	try	{
+			measurements measurement = ("%dupLoc" : 0, 
+									"totalLoc" : 0,
+									"dupLoc" : 0,
+									"numClones" : 0,
+									"numClasses" : 0,
+									"biggestClone" : 0,
+									"biggestClass" : 0									
+									);				
+	
+	testSetup setup = list[loc] testLocations = (|project://smallsql| : , |project://cloner|, |project://testproject|);
 	//create/read file with test
-	testSetup setup = (AST : ("hallo": 6, "dit" : "is"));
+	testSetup setup = (|project://Lab2/Tests/cloneDetectionTest.txt| : measurement);
 	appendToFile(|project://Lab2/Tests/cloneDetectionTest.txt|, setup);
 	appendToFile(|project://Lab2/Tests/cloneDetectionTest.txt|, "\r\n");
 	//validated the AST
@@ -40,6 +51,7 @@ public bool allAutoTest(set[Declaration] AST)
 
 public void readAutoTests()
 {
+//("numClasses":0,"dupLoc":0,"%dupLoc":0,"biggestClass":0,"biggestClone":0,"totalLoc":0,"numClones":0)
 		//list[testSetup]
 	iprint(readFileLines(|project://Lab2/Tests/cloneDetectionTest.txt|));
 	list[str] lines = readFileLines(|project://Lab2/Tests/cloneDetectionTest.txt|);
@@ -48,8 +60,23 @@ public void readAutoTests()
 	
 	for(line <- lines)
 	{	
-		list[str] splitLine = split(":", line);
-		set[Declaration] AST = createAstsFromEclipseProject(createM3FromEclipseProject(toLocation(line[0]), false));				
+		list[str] splitLine = split(":", line);		
+		loc location = toLocation(line[0]); // get location from the file
+		
+		str temp = replaceAll(line[1], "", "(");
+		str temp1 = replaceAll(temp1, "", ")");
+		//str temp2 = replaceAll(temp2, "", "");
+		
+		//list[str] o = split("," temp2);
+		
+		measurements measurement = ("%dupLoc" : 0 ,
+									"totalLoc" : 0,
+									"dupLoc" : 0,
+									"numClones" : 0,
+									"numClasses" : 0,
+									"biggestClone" : 0,
+									"biggestClass" : 0									
+									);				
 	}
 }
 
