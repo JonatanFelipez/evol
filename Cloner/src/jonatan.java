@@ -1,15 +1,25 @@
 
 public class jonatan {
 
-	private int x;
-	
-	public void setX (int a)
+	public jonatan makeAJonatan()
 	{
-		x = a;
+		return new jonatan();		
 	}
 	
-	public int getX ()
+	public int foo()
 	{
-		return x;
+		int a = 0;
+		int b = 2;
+		
+		if(a < b)
+		{
+			a= b;
+			if(b*a == 12)
+			{
+				return a;
+			}
+			return b;
+		}
+		return a+b;
 	}
 }

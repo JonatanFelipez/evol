@@ -5,6 +5,8 @@
 		<item value="false" key="WizardProjectsImportPage.STORE_COPY_PROJECT_ID"/>
 		<item value="false" key="WizardProjectsImportPage.STORE_ARCHIVE_SELECTED"/>
 		<list key="WizardProjectsImportPage.STORE_DIRECTORIES">
+			<item value="C:\Users\Jonatan\workspace\testproject"/>
+			<item value="C:\Users\Jonatan\workspace"/>
 			<item value="C:\Users\Jonatan\Desktop\Software evolution\Lab1\hsqldb-2.3.1"/>
 			<item value="C:\Users\Jonatan\Desktop\Software evolution\Lab1\smallsql0.21_src"/>
 		</list>

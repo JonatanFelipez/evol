@@ -1,0 +1,29 @@
+Clone class 1 }------------------------------------------------------------------------ 
+int a = 1;
+		int b = 2;
+		int c = 3;
+		int d = 4;
+		
+		int a = 1;
+		int b = 2;
+		int c = 3;
+		int d = 4;
+
+|project://testproject/src/Testcase.java|(777,112,<28,2>,<36,12>)
+|project://testproject/src/testproject/Testcount.java|(329,112,<27,2>,<35,12>)
+|project://testproject/src/TestUnit.java|(949,112,<41,2>,<49,12>)
+
+Clone class 2 }------------------------------------------------------------------------ 
+int a = 1;
+		int b = 2;
+		int c = 3;
+		int d = 4;
+		
+		int e = 1;
+		int f = 2;
+		int g = 3;
+		int h = 4;
+
+|project://testproject/src/Testcase.java|(928,112,<41,2>,<49,12>)
+|project://testproject/src/testproject/Testcount.java|(134,112,<11,2>,<19,12>)
+

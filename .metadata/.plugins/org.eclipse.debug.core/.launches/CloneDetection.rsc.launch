@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="rascal.launchType">
-<stringAttribute key="rascal.debugModel.ATTR_RASCAL_PROGRAM" value="/Lab1/src/SIGModelMetrics/CloneDetection.rsc"/>
+<stringAttribute key="rascal.debugModel.ATTR_RASCAL_PROGRAM" value="/Lab2/src/CloneDetection.rsc"/>
 </launchConfiguration>
