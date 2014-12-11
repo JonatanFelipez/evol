@@ -132,67 +132,57 @@ public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 	println("Finding Clones......");
 	
 	println("Get decClones...."); 
-	map[Declaration, list[loc]] decClones = getBucketsDec(AST, threshold);
+		map[Declaration, list[loc]] decClones = getBucketsDec(AST, threshold);
 	println("Get seqClones......");
-	map[Sequence, list[loc]] seqClones = getBucketsSeq(AST, threshold);
+		map[Sequence, list[loc]] seqClones = getBucketsSeq(AST, threshold);
+	
+	//Initialize parent -> child clone mapping
 	map[loc, list[loc]] par2Child = ();
+	
+	//Initialize cloneClasses
 	map[loc, list[loc]] cloneClasses = ();
 	
-	list[loc] seqLocs = [];
+	//Initialize cloneClasses
 	
 	println("Looking for childeren");
-	for(parClones <- seqClones)
-		for(loc par <- seqClones[parClones])
-			seqLocs += [par];	
+	list[loc] seqLocs = [par | parClones <- seqClones, par <- seqClones[parClones]];
+	
 	
 	for(seq <- seqLocs){				
-		//par2Child += (par : childs | <par, childs> <- findChildren(seq, seqs));
-		x = findChildren(seq, seqLocs);
-		 par2Child += (x[0] : x[1]);
-	}
+		 tupParChild = findChildren(seq, seqLocs);
+		 par2Child += (tupParChild[0] : tupParChild[1]);
+	}		
 	
 	println("get loc2Seq.....");	
-	map[loc, Sequence] loc2Seq = ();
-	for(seq <- seqClones)
-		for(location <- seqClones[seq])			
-				loc2Seq[location] = seq;
+	map[loc, Sequence] loc2Seq = (location : sequence | sequence <- seqClones, location <- seqClones[sequence]);
 	
 	println("get child2Par.....");
-	map[loc, loc] child2Par = ();
-	for(par <- par2Child)
-		for(child <- par2Child[par])			
-				child2Par[child] = par;
+	map[loc, loc] child2Par = ( child : par |  par <- par2Child, child <- par2Child[par] );
 	
-	for(parent <- par2Child)
-	{
-		if(size(par2Child[parent]) > 0)
-		{
-			println(parent);
-		}
-	}
+	//accumulate non subclones clones
+	filteredSeqClones = ();
 	
-	list[loc] children = [x | x <- child2Par];
-	for(child <-children)
+	//Detect and remove clone subclassess
+	for(child <- child2Par)
 	{		
 		sequence = loc2Seq[child];
-		println("sequence: <sequence>");
-		println("child: <child>");
 		clones = [x | x <- seqClones[sequence], x != child];
 		par = child2Par[child];
 		parSeq = loc2Seq[par];
 		
-		parClones = [x|x<-seqClones[parSeq], x != par];
+		parClones = [x | x <-seqClones[parSeq], x != par];
 		bool subClass = true;
 		
-		for(cc <- clones)
+		for(childClone <- clones)
 		{
 			hasParent = false;
-			for(pc <- parClones)
-				if(containsIn(pc,cc))
+			for(parClone <- parClones)
+				if(containsIn(parClone,childClone))
 				{
 					hasParent = true;
 					break;
 				}
+			
 			if(!hasParent)
 			{
 				subClass = false;
@@ -200,35 +190,19 @@ public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 			}		
 		}
 		
-		if(subClass)
-			{seqClones = seqClones & (sequence : seqClones[sequence]); break;}
+		if(!subClass)
+			{
+				//Filter from clone classes
+				filteredSeqClones += (sequence : seqClones[sequence]); 
+				break;
+			}
 	}
+	println("/////////////////////////////////////////////////////////");	
+	iprint([seqClones[x] | x <- filteredSeqClones]); 
+	println("/////////////////////////////////////////////////////////");
 	
 	return seqClones;
-		/*
-	for(par <- par2Child){
-		for(childs <- par2Child[par])
-		{
-			for(child <- childs)
-			{
-				for(seqs <- seqClones)
-				{
-					for(seq <- seqClones[seqs])
-					{
-						for(seqLoc <- seq)
-						{
-							if(child == seqLoc)
-							{
-								if()
 
-							}
-						}
-					}
-				}
-			}
-		}
-		
-	}*/
 	//build up par2Child
 	// par2Child = (par : childs | <par,childs> <- findChildren(parent, children);
 	//par2Child = (par : childs | <par, childs> <- findChildren(parent, children));	
@@ -247,7 +221,7 @@ public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 	//zo ja kijken of al die klonen in een kloon van de parent zitten.
 }
 
-public tuple[loc, list[loc]] findChildren(loc parent, list[loc] childeren)
+public tuple[loc l, list[loc] ll] findChildren(loc parent, list[loc] childeren)
 {	
 	list[loc] locPar2Child = [];
 		
