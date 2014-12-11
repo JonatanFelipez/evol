@@ -8,7 +8,7 @@ alias Sequence2 = [Statement];
 
 public void exportToJsonFile(value x)
 {
-	iprintToFile(|project://Lab2/cloneClasses.js|,toJSON(x));
+	printToFile(|project://Lab2/cloneClasses.js|,toJSON(x));
 }
 
 public void exportClonesToFile(map[Sequence2, [loc]] cloneClasses)
