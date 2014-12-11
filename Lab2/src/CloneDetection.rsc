@@ -3,6 +3,7 @@ module CloneDetection
 import Prelude;
 import Map;
 import String;
+import util::Math;
 
 //Java Parsing libraries
 import lang::java::m3::Core;
@@ -102,17 +103,18 @@ public void run(M3 model, int threshold, bool Exports)
 	}
 }
 
-public void run(set[Declaration] AST, int threshold, bool Exports)
+public map[str, int] run(set[Declaration] AST, int threshold, bool Exports)
 {
 	println("Gathering clone data...");
-	x = getClones(asts, threshold);	
+	x = getClones(AST, threshold);	
+	res = getResults(x);
 	if(Exports){
-		println("Exporting to Json file...");
-		res = getResults(x);
+		println("Exporting to Json file...");		
 		exportToJsonFile(res);
 		println("exporting to file");
-		exportClonesToFile(x);
+		exportClonesToFile(x);		
 	}
+	return makeRapport(x, AST, res);
 }
 
 public void run(loc proj, int threshold)
@@ -131,30 +133,38 @@ public void run(loc proj, int threshold)
 	exportClonesToFile(x);
 }
 
-public void makeRapport(map[Sequence, list[loc]] clonesClasses, set[Declaration] AST, map[Sequence, list[int]] results)
+public map[str, int] makeRapport(map[Sequence, list[loc]] clonesClasses, set[Declaration] AST, map[Sequence, list[int]] results)
 {
+	rapport =("%dupLoc" : 0, //check
+			  "totalLoc" : 0, //check
+			  "dupLoc" : 0, //check
+			  "numClones" : 0, //check
+			  "numClasses" : 0 //check			  
+			  );
+					 
 	map[int , loc] biggestClone = ();
-	
+	int numberOfClones = 0;
 	println("building rapport....");
 	real totalLines = totalLOC(AST) * 1.0;
 	println("total lines of code: <totalLines>");
+	rapport["totalLoc"] = toInt(totalLines);
 	real duplines = 0.0;
 	for(sequence <- results)
 	{
 		duplines += results[sequence][0] * 1.0;
-			for(l)
-			{
-				;
-			}
-		
+		numberOfClones += results[sequence][1];					
 	}
 	real LinesPer = duplines / totalLines * 100;
 	println("duplicated lines of code: <duplines>");
+	rapport["dupLoc"] = toInt(duplines);
 	println("% duplicated lines of code: <LinesPer>"); 
-	
+	rapport["%dupLoc"] = toInt(LinesPer);
 	println("number of classes: <size(results)>");
+	rapport["numClasses"] = size(results);
+	println("number of clones: <numberOfClones>");
+	rapport["numClones"] = numberOfClones;
 	
-	
+	return rapport;	
 }
 
 public map[Sequence, list[int]] getResults(map[Sequence, list[loc]] clonesClasses)
