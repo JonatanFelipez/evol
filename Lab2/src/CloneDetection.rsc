@@ -127,27 +127,85 @@ public map[Declaration, list[loc]] groupClones(map[str, set[Declaration]] bucket
 	return cloneClasses;
 }
 
-public map[loc, list[loc]] getClones(set[Declaration] AST, int threshold)
+public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 {
+	println("Finding Clones......");
+	
+	println("Get decClones...."); 
 	map[Declaration, list[loc]] decClones = getBucketsDec(AST, threshold);
+	println("Get seqClones......");
 	map[Sequence, list[loc]] seqClones = getBucketsSeq(AST, threshold);
 	map[loc, list[loc]] par2Child = ();
 	map[loc, list[loc]] cloneClasses = ();
 	
-	list[loc] seqs = [];
+	list[loc] seqLocs = [];
 	
+	println("Looking for childeren");
 	for(parClones <- seqClones)
 		for(loc par <- seqClones[parClones])
-			seqs += [par];	
+			seqLocs += [par];	
 	
-	for(seq <- seqs){				
+	for(seq <- seqLocs){				
 		//par2Child += (par : childs | <par, childs> <- findChildren(seq, seqs));
-		x = findChildren(seq, seqs);
-		par2Child += (x[0] : x[1]);
+		x = findChildren(seq, seqLocs);
+		 par2Child += (x[0] : x[1]);
 	}
 	
-	return par2Child;
+	println("get loc2Seq.....");	
+	map[loc, Sequence] loc2Seq = ();
+	for(seq <- seqClones)
+		for(location <- seqClones[seq])			
+				loc2Seq[location] = seq;
+	
+	println("get child2Par.....");
+	map[loc, loc] child2Par = ();
+	for(par <- par2Child)
+		for(child <- par2Child[par])			
+				child2Par[child] = par;
+	
+	for(parent <- par2Child)
+	{
+		if(size(par2Child[parent]) > 0)
+		{
+			println(parent);
+		}
+	}
+	
+	list[loc] children = [x | x <- child2Par];
+	for(child <-children)
+	{		
+		sequence = loc2Seq[child];
+		println("sequence: <sequence>");
+		println("child: <child>");
+		clones = [x | x <- seqClones[sequence], x != child];
+		par = child2Par[child];
+		parSeq = loc2Seq[par];
 		
+		parClones = [x|x<-seqClones[parSeq], x != par];
+		bool subClass = true;
+		
+		for(cc <- clones)
+		{
+			hasParent = false;
+			for(pc <- parClones)
+				if(containsIn(pc,cc))
+				{
+					hasParent = true;
+					break;
+				}
+			if(!hasParent)
+			{
+				subClass = false;
+				break;	
+			}		
+		}
+		
+		if(subClass)
+			{seqClones = seqClones & (sequence : seqClones[sequence]); break;}
+	}
+	
+	return seqClones;
+		/*
 	for(par <- par2Child){
 		for(childs <- par2Child[par])
 		{
@@ -170,7 +228,7 @@ public map[loc, list[loc]] getClones(set[Declaration] AST, int threshold)
 			}
 		}
 		
-	}
+	}*/
 	//build up par2Child
 	// par2Child = (par : childs | <par,childs> <- findChildren(parent, children);
 	//par2Child = (par : childs | <par, childs> <- findChildren(parent, children));	
@@ -190,30 +248,17 @@ public map[loc, list[loc]] getClones(set[Declaration] AST, int threshold)
 }
 
 public tuple[loc, list[loc]] findChildren(loc parent, list[loc] childeren)
-{
-	//Todo: for each parent check for each children: not equal and contained within: in same file and between beginLine and endLine
-	// if contained within then add to par2Child[parent] += contained child loc
-	
-	//if(check uri van parent and loc) if not equal do nothing.
-	//if equal, check if position of child is contained within parent
+{	
 	list[loc] locPar2Child = [];
-	tuple[loc, list[loc]] filPar2Child = <parent, []>; 
-	for(child <- childeren)
-	{
-		if(parent != child && parent.uri == child.uri)
-		{
-			if(child.begin.line >= parent.begin.line && child.end.line <= parent.end.line)
-			{
-				locPar2Child += [child];
-			}
-		}
-	}
+		
+	for(child <- childeren, parent != child && containsIn(parent, child))
+		locPar2Child += [child];			
+	
 	return <parent, locPar2Child>;
 }
 
 public map[Declaration, list[loc]] getBucketsDec(set[Declaration] AST, int threshold)
-{
-	//TODO: locations > 1 (alleen de clones niet de unique)
+{	
 	map[Declaration, list[loc]] dec2Loc = ();
 	visit(AST){
 		case Declaration x: {
@@ -235,12 +280,12 @@ public map[Declaration, list[loc]] getBucketsDec(set[Declaration] AST, int thres
 				}
 			}
 	}		
-	return dec2Loc;
+	return (seq : dec2Loc[seq] | seq <- dec2Loc, size(dec2Loc[seq])>1);
+	//return dec2Loc;
 } 
 
 public map[Sequence, list[loc]] getBucketsSeq(set[Declaration] AST, int threshold)
-{
-	//TODO: locations > 1 (alleen de clones niet de unique)
+{	
 	map[Sequence, list[loc]] seq2Loc = ();
 	visit(AST){
 		case i: \initializer(Statement initializerBody):{
@@ -280,7 +325,8 @@ public map[Sequence, list[loc]] getBucketsSeq(set[Declaration] AST, int threshol
 			}			
 		}
 	}
-	return seq2Loc;
+	return (seq : seq2Loc[seq] | seq <- seq2Loc, size(seq2Loc[seq])>1);
+	//return seq2Loc;
 }
 
 public map[Sequence, list[loc]] bucketSortSequence(Statement state, int threshold)
@@ -312,8 +358,7 @@ public map[Statement, list[loc]] bucketSortStat(Statement stat, int threshold)
 	{
 		case Statement x: {
 			if(x in buckets){					
-					buckets[x] += [x@src];
-					println("x = <x@src> amd buckets[x] = <buckets[x]>");  
+					buckets[x] += [x@src];					 
 				}
 			else if(sizeOfTree(x) >= threshold)
 			 		buckets += (x : [x@src]);}
@@ -323,8 +368,6 @@ public map[Statement, list[loc]] bucketSortStat(Statement stat, int threshold)
 
 //change declaration to boom
 public map[str, set[Declaration]] bucketSortDecl(Declaration dec, int threshold) {
-	
-	println("AST made, bucket sorting decls...");	
 	
 	//buckets
 	map[str, set[Declaration]] buckets = (
@@ -435,6 +478,13 @@ public list[list[list[Statement]]] ripStatement(Statement state, int threshold)
 		case x : \block(list[Statement] statements):{sequences += [getStatementSequences(statements, threshold)];} //need this		
     }
     return sequences;    
+}
+
+private bool containsIn(loc parent, loc child)
+{
+	return parent.uri == child.uri && 
+		   child.begin.line >= parent.begin.line &&
+		   child.end.line <= parent.end.line;	
 }
 
 loc addLocs(loc s, loc r) {
