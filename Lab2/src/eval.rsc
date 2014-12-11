@@ -2,6 +2,7 @@ module eval
 
 import Prelude;
 import String;
+import IO;
 
 import CloneDetection;
 
@@ -13,6 +14,55 @@ import lang::java::jdt::m3::AST;
 
 @memo
 //value getMyExampleData(int input)
+alias testSetup = map[set[Declaration] AST, measurements measurement];
+alias measurements = map[str name, value _value];
+
+public bool allAutoTest(set[Declaration] AST)
+{
+	try	{
+	//create/read file with test
+	testSetup setup = (AST : ("hallo": 6, "dit" : "is"));
+	appendToFile(|project://Lab2/Tests/cloneDetectionTest.txt|, setup);
+	appendToFile(|project://Lab2/Tests/cloneDetectionTest.txt|, "\r\n");
+	//validated the AST
+	
+	//validated the answers
+	
+	//check all methods
+	
+	//print results
+	
+	//return true or false make modifier(void) to test.
+		return true; 
+		int a = 0;
+	}catch exp : println("During the autotest, a error occured: <exp>"); return false;	
+}
+
+public void readAutoTests()
+{
+		//list[testSetup]
+	iprint(readFileLines(|project://Lab2/Tests/cloneDetectionTest.txt|));
+	list[str] lines = readFileLines(|project://Lab2/Tests/cloneDetectionTest.txt|);
+	list[testSetup] setups = [];
+	map[str name, value _value] measurements = ();
+	
+	for(line <- lines)
+	{	
+		list[str] splitLine = split(":", line);
+		set[Declaration] AST = createAstsFromEclipseProject(createM3FromEclipseProject(toLocation(line[0]), false));				
+	}
+}
+
+//Simply add new test units to the autoTest
+private bool addAutoTest(loc projectLoc, testSetup setup)
+{
+	try	{
+		//create/read file with test		
+		appendToFile(|project://Lab2/Tests/cloneDetectionTest.txt|, setup); //append the test to the file.
+		appendToFile(|project://Lab2/Tests/cloneDetectionTest.txt|, "\r\n"); //to put each test on a new line.
+		return true;
+	}catch exp: println(exp); return false;
+}
 
 public test bool test_sizeOfTree(Statement state, int numberOfNodes)
 {

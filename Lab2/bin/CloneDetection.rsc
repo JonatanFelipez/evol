@@ -461,6 +461,44 @@ private bool containsIn(loc parent, loc child)
 		   child.end.line <= parent.end.line;	
 }
 
+public int totalLOC(set[Declaration] AST)
+{	
+	cnt = 0;
+		for(dec <- AST)
+	{
+		cnt += 	declarationLOC(dec);
+	}
+	return cnt;}
+
+public int sequenceSize(Sequence seqs)
+{
+	cnt = 0;
+	for(seq <- seqs)
+	{
+		cnt += sizeOfTree(seq);
+	}
+	return cnt;
+}
+
+public int declarationLOC(Declaration dec)
+{
+	cnt = 0;
+	visit(dec){
+		case i: \initializer(Statement initializerBody):{cnt += sizeOfTree(initializerBody) + 1;}
+		case m: \method(_, _, _, _, Statement impl):{cnt += sizeOfTree(impl) + 1;}	
+		case c: \constructor(_, _, _, Statement impl) :{cnt += sizeOfTree(impl) + 1;}
+		case x: \field(Type \type, list[Expression] fragments):{cnt + 1;}
+		case x: \import(_):{cnt += 1;}
+	   	case x: \package(_):{cnt += 1;}
+	   	case x: \class(str name, list[Type] extends, list[Type] implements, list[Declaration] body):{cnt+=1;}
+	   	case x: \class(list[Declaration] body):{cnt+=1;}
+	   	case x: \interface(str name, list[Type] extends, list[Type] implements, list[Declaration] body):{cnt+=1;}
+	   	case x: \enum(str name, list[Type] implements, list[Declaration] constants, list[Declaration] body):{cnt+=1;}
+	   	case x: \enumConstant(str name, list[Expression] arguments, Declaration class):{cnt+=1;}
+	}
+	return cnt;
+}
+
 loc addLocs(loc s, loc r) {
     res = s;
     res.end = r.end;

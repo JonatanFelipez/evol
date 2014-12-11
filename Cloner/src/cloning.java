@@ -1,7 +1,3 @@
-import String;
-
-//This is ofcourse a test
-/*This is ofcourse a test*/
 
 public class cloning {
 	
@@ -28,9 +24,3 @@ public class cloning {
 	}
 
 }
-/*this
- * is
- * also
- * a
- * test
- * */
