@@ -95,7 +95,8 @@ public void run(M3 model, int threshold, bool Exports)
 	x = getClones(asts, threshold);	
 	if(Exports){
 		println("Exporting to Json file...");
-		exportToJsonFile(getResults(x));
+		res = getResults(x);
+		exportToJsonFile(res);
 		println("exporting to file");
 		exportClonesToFile(x);
 	}
@@ -107,7 +108,8 @@ public void run(set[Declaration] AST, int threshold, bool Exports)
 	x = getClones(asts, threshold);	
 	if(Exports){
 		println("Exporting to Json file...");
-		exportToJsonFile(getResults(x));
+		res = getResults(x);
+		exportToJsonFile(res);
 		println("exporting to file");
 		exportClonesToFile(x);
 	}
@@ -122,9 +124,37 @@ public void run(loc proj, int threshold)
 	println("Gathering clone data...");
 	x = getClones(asts, threshold);
 	println("Exporting to Json file...");
-	exportToJsonFile(getResults(x));
+	res = getResults(x);
+	makeRapport(x, asts, res);
+	exportToJsonFile(res);
 	println("exporting to file");
 	exportClonesToFile(x);
+}
+
+public void makeRapport(map[Sequence, list[loc]] clonesClasses, set[Declaration] AST, map[Sequence, list[int]] results)
+{
+	map[int , loc] biggestClone = ();
+	
+	println("building rapport....");
+	real totalLines = totalLOC(AST) * 1.0;
+	println("total lines of code: <totalLines>");
+	real duplines = 0.0;
+	for(sequence <- results)
+	{
+		duplines += results[sequence][0] * 1.0;
+			for(l)
+			{
+				;
+			}
+		
+	}
+	real LinesPer = duplines / totalLines * 100;
+	println("duplicated lines of code: <duplines>");
+	println("% duplicated lines of code: <LinesPer>"); 
+	
+	println("number of classes: <size(results)>");
+	
+	
 }
 
 public map[Sequence, list[int]] getResults(map[Sequence, list[loc]] clonesClasses)
