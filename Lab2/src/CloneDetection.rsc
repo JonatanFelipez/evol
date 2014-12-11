@@ -10,36 +10,14 @@ import lang::java::jdt::m3::Core;
 import lang::java::m3::AST;
 import lang::java::jdt::m3::AST;
 
+import Export;
+
 int threshold = 6;
 //set[Declaration]
 
 //aliases
 alias Sequences = list[Sequence];
 alias Sequence = list[Statement];
-
-public void getAST()
-{
- 	M3 model = createM3FromEclipseProject(|project://testproject|);
-	decls = createAstsFromEclipseProject(model.id, false);
-	
-	/* This also creates a stackoverflow but does work on smaller programs. Unfortunately createAstsFromEclipseProject does the same thing. It could be used to split the project.
-	
-	set[Declaration] decls = {};
-		for(file <-files(model))
-	{
-		createAstFromFile(file, true); //this was a test to see if this was faster. i can't measure the difference yet. DO NOT RUN THIS USING IPRINT UNLESS YOU WANT TO BUY A NEW MACHINE!!!		
-	}
-	iprint(decls);*/
-	
-	visit(decls)
-	{
-		case m : \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): {println("name : <m@src> size of tree is: <sizeOfTree(impl)>"); iprint(impl);}
-		
-	}
-	
-	println("m3 files size is: <size(files(model))>");	
-	println("ast size is: <size(decls)>");
-}
 
 //input: a list of statements, output a list of statement sequences that 
 public list[list[Statement]] getStatementSequences(list[Statement] stmts, int threshold)
@@ -65,40 +43,6 @@ public list[list[Statement]] getStatementSequences(list[Statement] stmts, int th
 		}		
 	}
 	return sequences;	
-}
-
-public void testCloneDetection()
-{
-	M3 model = createM3FromEclipseProject(|project://hsqldb|);
-	//M3 model = createM3FromEclipseProject(|project://smallsql|);
-	println("computed M3, starting cloneDetection Method");
-	map[str, set[Declaration]] result = bucketSortDecl(model, threshold);	
-	
-	//Debug, shor results
-	map[Declaration, list[loc]] groups = groupClones(result);
-	iprint(groups);
-	
-	/*
-	for(x <- result)
-	{
-		int i = 0;
-		println("Tree type: <x>");
-		for(y <- result[x])
-		{
-			if(i < 10)
-			{
-				try{
-					println("location <i>: <y@src>");
-					i += 1;	
-				}
-				catch NoSuchAnnotation(l) : {
-						;
-				}
-			}
-			else 
-			  break;
-		 }
-	}	*/
 }
 
 //change declaration to boom
@@ -127,14 +71,26 @@ public map[Declaration, list[loc]] groupClones(map[str, set[Declaration]] bucket
 	return cloneClasses;
 }
 
+public void run(int threshold)
+{ run(|project://smallsql|, threshold); }
+
+public void run(loc proj, int threshold)
+{
+	println("Creating M3 model...");
+	model = createM3FromEclipseProject(proj);
+	println("Creating ASTs from model...");
+	asts = createAstsFromEclipseProject(model.id, false);
+	println("Gathering clone data...");
+	x = getClones(asts, threshold);
+	println("Exporting to Json file...");
+	exportToJsonFile(getClones(asts, threshold));
+}
+
+//public map[Sequence, list[loc]]
 public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 {
-	println("Finding Clones......");
-	
-	println("Get decClones...."); 
-		map[Declaration, list[loc]] decClones = getBucketsDec(AST, threshold);
-	println("Get seqClones......");
-		map[Sequence, list[loc]] seqClones = getBucketsSeq(AST, threshold);
+	map[Declaration, list[loc]] decClones = getBucketsDec(AST, threshold);
+	map[Sequence, list[loc]] seqClones = getBucketsSeq(AST, threshold);
 	
 	//Initialize parent -> child clone mapping
 	map[loc, list[loc]] par2Child = ();
@@ -143,24 +99,21 @@ public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 	map[loc, list[loc]] cloneClasses = ();
 	
 	//Initialize cloneClasses
-	
-	println("Looking for childeren");
 	list[loc] seqLocs = [par | parClones <- seqClones, par <- seqClones[parClones]];
-	
 	
 	for(seq <- seqLocs){				
 		 tupParChild = findChildren(seq, seqLocs);
 		 par2Child += (tupParChild[0] : tupParChild[1]);
 	}		
 	
-	println("get loc2Seq.....");	
 	map[loc, Sequence] loc2Seq = (location : sequence | sequence <- seqClones, location <- seqClones[sequence]);
-	
-	println("get child2Par.....");
 	map[loc, loc] child2Par = ( child : par |  par <- par2Child, child <- par2Child[par] );
 	
 	//accumulate non subclones clones
-	filteredSeqClones = ();
+	map[Sequence, list[loc]] filteredSeqClones = ();
+	
+	//Add all clones that are not children themselves
+	filteredSeqClones = ( loc2Seq[clone] : seqClones[loc2Seq[clone]] | clone <- seqLocs, clone notin child2Par );
 	
 	//Detect and remove clone subclassess
 	for(child <- child2Par)
@@ -169,10 +122,8 @@ public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 		clones = [x | x <- seqClones[sequence], x != child];
 		par = child2Par[child];
 		parSeq = loc2Seq[par];
-		
-		parClones = [x | x <-seqClones[parSeq], x != par];
 		bool subClass = true;
-		
+		parClones = concatList([ filteredSeqClones[x] | x <- filteredSeqClones]);
 		for(childClone <- clones)
 		{
 			hasParent = false;
@@ -191,35 +142,21 @@ public map[Sequence, list[loc]] getClones(set[Declaration] AST, int threshold)
 		}
 		
 		if(!subClass)
-			{
-				//Filter from clone classes
-				filteredSeqClones += (sequence : seqClones[sequence]); 
-				break;
-			}
+		{
+			//Filter from clone classes
+			filteredSeqClones += (sequence : seqClones[sequence]); 
+			break;
+		}
 	}
-	println("/////////////////////////////////////////////////////////");	
+	//println("/////////////////////////////////////////////////////////");	
 	iprint([seqClones[x] | x <- filteredSeqClones]); 
-	println("/////////////////////////////////////////////////////////");
+	//println("/////////////////////////////////////////////////////////");
 	
-	return seqClones;
-
-	//build up par2Child
-	// par2Child = (par : childs | <par,childs> <- findChildren(parent, children);
-	//par2Child = (par : childs | <par, childs> <- findChildren(parent, children));	
-	
-	//Now the difficult part:
-	// - for all sequence clones:
-	// 		filter sequence clone x 
-	//			if x has a parent 
-	//			AND all clones of x have a parent that is a clone of the parent of x
-	//	
-	// After this is done, you have all the clone classes. 
-	// Convert this to JSON so that it can be used as input for visualization: www.highcharts.com
-	
-	// eerst alles met een parent vinden.
-	// dan kijken of die een klonen heeft.
-	//zo ja kijken of al die klonen in een kloon van de parent zitten.
+	return filteredSeqClones;
 }
+
+public list[value] concatList([[value]] lists)
+{ return ([] | it + x | x <- lists );}
 
 public tuple[loc l, list[loc] ll] findChildren(loc parent, list[loc] childeren)
 {	
